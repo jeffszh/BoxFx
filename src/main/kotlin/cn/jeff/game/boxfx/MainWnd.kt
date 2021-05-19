@@ -1,6 +1,7 @@
 package cn.jeff.game.boxfx
 
 import javafx.fxml.FXMLLoader
+import javafx.scene.image.Image
 import javafx.scene.layout.BorderPane
 import tornadofx.*
 
@@ -18,6 +19,9 @@ class MainWnd : View("推箱子智能版") {
 		))
 		j = loader.getController()
 		j.k = this
+
+		j.img1.image = Image("/img/wall.png")
+		j.img2.image = Image("/img/wall.png")
 	}
 
 	fun btnClick01() {
