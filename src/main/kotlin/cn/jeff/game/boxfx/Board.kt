@@ -1,6 +1,8 @@
 package cn.jeff.game.boxfx
 
+import javafx.geometry.Pos
 import javafx.scene.image.Image
+import javafx.scene.image.ImageView
 import tornadofx.*
 
 /**
@@ -32,20 +34,25 @@ class Board : View() {
 	private fun Cell.toImage(): Image =
 			cellImgMap[this] ?: kotlin.error("不可能")
 
-	override val root = gridpane()
+	override val root = gridpane {
+		alignment = Pos.CENTER
+	}
+
+	private val imageViews = mutableListOf<MutableList<ImageView>>()
 
 	fun setScene(scene: Scene) {
 		root.clear()
-		root.row {}
+		imageViews.clear()
 		println("加载scene，宽度=${scene.width}，高度=${scene.height}")
 		scene.cells.forEach { cellList ->
 			root.row {
+				val lineOfImageViews = mutableListOf<ImageView>()
 				cellList.forEach { cell ->
-					imageview(cell.toImage())
+					lineOfImageViews.add(imageview(cell.toImage()))
 				}
+				imageViews.add(lineOfImageViews)
 			}
 		}
-		root.row {}
 	}
 
 }
