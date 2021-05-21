@@ -1,6 +1,7 @@
 package cn.jeff.game.boxfx
 
 import cn.jeff.utils.Toast
+import cn.jeff.utils.inputNumber
 import javafx.fxml.FXMLLoader
 import javafx.scene.layout.BorderPane
 import tornadofx.*
@@ -43,19 +44,21 @@ class MainWnd : View("推箱子智能版") {
 		if (subMap.isNotEmpty()) {
 			loadMap(subMap.values.last())
 		} else {
-			//Toast.show("前面没有了。")
 			Toast("前面没有了。").show()
 		}
 	}
 
-	fun selectStage() {}
+	fun selectStage() {
+		inputNumber(currentMapNo, "请输入关卡号码") {
+			println(it)
+		}
+	}
 
 	fun nextStage() {
 		val subMap = MapManager.maps.tailMap(currentMapNo + 1)
 		if (subMap.isNotEmpty()) {
 			loadMap(subMap.values.first())
 		} else {
-			//Toast.show("后面没有了。")
 			Toast("后面没有了。").show()
 		}
 	}
