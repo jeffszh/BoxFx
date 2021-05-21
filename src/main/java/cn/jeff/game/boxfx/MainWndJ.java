@@ -1,17 +1,19 @@
 package cn.jeff.game.boxfx;
 
-import javafx.event.ActionEvent;
-
 public class MainWndJ {
 
 	public MainWnd k;
 
-	public void btnClick01() {
-		k.btnClick01();
+	public void prevStage() {
+		k.prevStage();
 	}
 
-	public void btnClick02() {
-		k.btnClick02();
+	public void selectStage() {
+		k.selectStage();
+	}
+
+	public void nextStage() {
+		k.nextStage();
 	}
 
 }

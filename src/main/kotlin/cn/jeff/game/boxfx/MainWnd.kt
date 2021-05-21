@@ -9,6 +9,7 @@ class MainWnd : View("推箱子智能版") {
 	override val root: BorderPane
 	private val j: MainWndJ
 	private val board: Board
+	private var currentMapNo = 0
 
 	init {
 		primaryStage.isResizable = true
@@ -22,17 +23,38 @@ class MainWnd : View("推箱子智能版") {
 
 		board = Board()
 		root.center = board.root
+
+		loadFirstStage()
 	}
 
-	fun btnClick01() {
-		information("很好！")
+	private fun loadFirstStage() {
+		loadMap(MapManager.maps.values.first())
 	}
 
-	fun btnClick02() {
-		val gameMap = MapManager.maps[0]
-		println("加载第${gameMap.mapNo}关。")
+	private fun loadMap(gameMap: MapManager.GameMap) {
 		val scene = Scene(gameMap)
 		board.setScene(scene)
+		currentMapNo = gameMap.mapNo
+	}
+
+	fun prevStage() {
+		val subMap = MapManager.maps.headMap(currentMapNo)
+		if (subMap.isNotEmpty()) {
+			loadMap(subMap.values.last())
+		} else {
+			information("前面没有了。")
+		}
+	}
+
+	fun selectStage() {}
+
+	fun nextStage() {
+		val subMap = MapManager.maps.tailMap(currentMapNo + 1)
+		if (subMap.isNotEmpty()) {
+			loadMap(subMap.values.first())
+		} else {
+			information("后面没有了。")
+		}
 	}
 
 }

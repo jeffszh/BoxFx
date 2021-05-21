@@ -1,17 +1,19 @@
 package cn.jeff.game.boxfx
 
 import java.io.InputStreamReader
+import java.util.*
 
 object MapManager {
 
-	val maps: List<GameMap>
+	val maps: SortedMap<Int, GameMap>
 
 	init {
 		val lines = InputStreamReader(
 				javaClass.getResourceAsStream("/map/build_in_maps.txt")).use {
 			it.readLines()
 		}
-		maps = loadMaps(lines)
+		val mapList = loadMaps(lines)
+		maps = mapList.associateBy { it.mapNo }.toSortedMap()
 	}
 
 	private tailrec fun loadMaps(
