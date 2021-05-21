@@ -24,10 +24,13 @@ object Toast {
 		scene = Scene(label)
 		scene.fill = null
 		initStyle(StageStyle.TRANSPARENT)
+		isAlwaysOnTop = true
 	}
+	private var task: FXTimerTask? = null
 
 	fun show(msg: String, timeInMs: Int = 1000) {
-		runLater(Duration.millis(timeInMs.toDouble())) {
+		task?.cancel()
+		task = runLater(Duration.millis(timeInMs.toDouble())) {
 			stage.close()
 		}
 		label.text = msg
