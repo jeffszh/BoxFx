@@ -1,5 +1,6 @@
 package cn.jeff.game.boxfx
 
+import cn.jeff.utils.Toast
 import javafx.fxml.FXMLLoader
 import javafx.scene.layout.BorderPane
 import tornadofx.*
@@ -42,7 +43,7 @@ class MainWnd : View("推箱子智能版") {
 		if (subMap.isNotEmpty()) {
 			loadMap(subMap.values.last())
 		} else {
-			information("前面没有了。")
+			Toast.show("前面没有了。")
 		}
 	}
 
@@ -53,7 +54,7 @@ class MainWnd : View("推箱子智能版") {
 		if (subMap.isNotEmpty()) {
 			loadMap(subMap.values.first())
 		} else {
-			information("后面没有了。")
+			Toast.show("后面没有了。")
 		}
 	}
 
