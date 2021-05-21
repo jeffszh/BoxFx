@@ -43,7 +43,8 @@ class MainWnd : View("推箱子智能版") {
 		if (subMap.isNotEmpty()) {
 			loadMap(subMap.values.last())
 		} else {
-			Toast.show("前面没有了。")
+			//Toast.show("前面没有了。")
+			Toast("前面没有了。").show()
 		}
 	}
 
@@ -54,7 +55,8 @@ class MainWnd : View("推箱子智能版") {
 		if (subMap.isNotEmpty()) {
 			loadMap(subMap.values.first())
 		} else {
-			Toast.show("后面没有了。")
+			//Toast.show("后面没有了。")
+			Toast("后面没有了。").show()
 		}
 	}
 
