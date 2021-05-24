@@ -49,8 +49,30 @@ class MainWnd : View("推箱子智能版") {
 	}
 
 	fun selectStage() {
-		inputNumber(currentMapNo, "请输入关卡号码") {
-			println(it)
+		inputNumber(currentMapNo, "请输入关卡号码") { mapNo ->
+			MapManager.maps[mapNo]?.also {
+				loadMap(it)
+			} ?: apply {
+				MapManager.maps.tailMap(mapNo).also { tailMap ->
+					if (tailMap.isNotEmpty()) {
+						val otherMap = tailMap.values.first()
+						confirm("找不到第 $mapNo 关，是否改为加载第 ${otherMap.mapNo} 关？") {
+							loadMap(otherMap)
+						}
+					} else {
+						MapManager.maps.headMap(mapNo).also { headMap ->
+							if (headMap.isNotEmpty()) {
+								val otherMap = headMap.values.last()
+								confirm("找不到第 $mapNo 关，是否改为加载第 ${otherMap.mapNo} 关？") {
+									loadMap(otherMap)
+								}
+							} else {
+								warning("找不到第 $mapNo 关。")
+							}
+						}
+					}
+				}
+			}
 		}
 	}
 
