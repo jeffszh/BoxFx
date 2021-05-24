@@ -11,7 +11,7 @@ class MainWnd : View("推箱子智能版") {
 	override val root: BorderPane
 	private val j: MainWndJ
 	private val board: Board
-	private var currentMapNo = 0
+	private var currentRoomNo = 0
 
 	init {
 		primaryStage.isResizable = true
@@ -26,54 +26,54 @@ class MainWnd : View("推箱子智能版") {
 		board = Board()
 		root.center = board.root
 
-		loadFirstStage()
+		loadFirstRoom()
 	}
 
-	private fun loadFirstStage() {
-		loadMap(MapManager.maps.values.first())
+	private fun loadFirstRoom() {
+		loadRoom(RoomManager.rooms.values.first())
 	}
 
-	private fun loadMap(gameMap: MapManager.GameMap) {
-		val scene = Scene(gameMap)
+	private fun loadRoom(room: RoomManager.Room) {
+		val scene = Scene(room)
 		board.setScene(scene)
-		currentMapNo = gameMap.mapNo
+		currentRoomNo = room.roomNo
 	}
 
-	fun prevStage() {
-		val subMap = MapManager.maps.headMap(currentMapNo)
+	fun prevRoom() {
+		val subMap = RoomManager.rooms.headMap(currentRoomNo)
 		if (subMap.isNotEmpty()) {
-			loadMap(subMap.values.last())
+			loadRoom(subMap.values.last())
 		} else {
 			Toast("前面没有了。").show()
 		}
 	}
 
-	fun selectStage() {
-		inputNumber(currentMapNo, "请输入关卡号码") { mapNo ->
-			MapManager.maps[mapNo]?.also {
+	fun selectRoom() {
+		inputNumber(currentRoomNo, "请输入关卡号码") { roomNo ->
+			RoomManager.rooms[roomNo]?.also {
 				// 找到这关，就直接加载。
-				loadMap(it)
+				loadRoom(it)
 			} ?: apply {
 				// 找不到，首先向后搜。
-				MapManager.maps.tailMap(mapNo).also { tailMap ->
+				RoomManager.rooms.tailMap(roomNo).also { tailMap ->
 					// 如果向后搜找到了，问TA要不要改为这关。
 					if (tailMap.isNotEmpty()) {
-						val otherMap = tailMap.values.first()
-						confirm("找不到第 $mapNo 关，是否改为加载第 ${otherMap.mapNo} 关？") {
-							loadMap(otherMap)
+						val otherRoom = tailMap.values.first()
+						confirm("找不到第 $roomNo 关，是否改为加载第 ${otherRoom.roomNo} 关？") {
+							loadRoom(otherRoom)
 						}
 					} else {
 						// 向后搜找不到，就向前搜。
-						MapManager.maps.headMap(mapNo).also { headMap ->
+						RoomManager.rooms.headMap(roomNo).also { headMap ->
 							// 如果向前搜找到了，问TA要不要改为这关。
 							if (headMap.isNotEmpty()) {
-								val otherMap = headMap.values.last()
-								confirm("找不到第 $mapNo 关，是否改为加载第 ${otherMap.mapNo} 关？") {
-									loadMap(otherMap)
+								val otherRoom = headMap.values.last()
+								confirm("找不到第 $roomNo 关，是否改为加载第 ${otherRoom.roomNo} 关？") {
+									loadRoom(otherRoom)
 								}
 							} else {
 								// 不会运行到这里，不可能后面和前面都没有，除非一关都没有。
-								warning("找不到第 $mapNo 关。")
+								warning("找不到第 $roomNo 关。")
 							}
 						}
 					}
@@ -82,10 +82,10 @@ class MainWnd : View("推箱子智能版") {
 		}
 	}
 
-	fun nextStage() {
-		val subMap = MapManager.maps.tailMap(currentMapNo + 1)
+	fun nextRoom() {
+		val subMap = RoomManager.rooms.tailMap(currentRoomNo + 1)
 		if (subMap.isNotEmpty()) {
-			loadMap(subMap.values.first())
+			loadRoom(subMap.values.first())
 		} else {
 			Toast("后面没有了。").show()
 		}

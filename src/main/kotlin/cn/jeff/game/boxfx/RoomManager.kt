@@ -3,22 +3,25 @@ package cn.jeff.game.boxfx
 import java.io.InputStreamReader
 import java.util.*
 
-object MapManager {
+/**
+ * 游戏中的一关，称为[Room]。
+ */
+object RoomManager {
 
-	val maps: SortedMap<Int, GameMap>
+	val rooms: SortedMap<Int, Room>
 
 	init {
 		val lines = InputStreamReader(
-				javaClass.getResourceAsStream("/map/build_in_maps.txt")).use {
+				javaClass.getResourceAsStream("/room/build_in_rooms.txt")).use {
 			it.readLines()
 		}
-		val mapList = loadMaps(lines)
-		maps = mapList.associateBy { it.mapNo }.toSortedMap()
+		val roomList = loadRooms(lines)
+		rooms = roomList.associateBy { it.roomNo }.toSortedMap()
 	}
 
-	private tailrec fun loadMaps(
+	private tailrec fun loadRooms(
 			lines: List<String>,
-			tempResult: MutableList<GameMap> = mutableListOf()): List<GameMap> {
+			tempResult: MutableList<Room> = mutableListOf()): List<Room> {
 		val lastHeaderIndex = lines.indexOfLast {
 			// 标题是以“M”开头
 			it.startsWith('M')
@@ -29,10 +32,10 @@ object MapManager {
 		val part2 = lines.subList(lastHeaderIndex, lines.count())
 
 		// 去掉前面的“M”作为关卡号码
-		val mapNo = lines[lastHeaderIndex].substring(1).toInt()
+		val roomNo = lines[lastHeaderIndex].substring(1).toInt()
 		// 添加至中间结果
-		tempResult.add(GameMap(
-				mapNo = mapNo,
+		tempResult.add(Room(
+				roomNo = roomNo,
 				width = lines[lastHeaderIndex + 1].length,
 				height = lines.count() - lastHeaderIndex,
 				lines = part2.subList(1, part2.count())
@@ -44,12 +47,12 @@ object MapManager {
 				println("加载了${it.count()}个地图。")
 			}
 		} else {
-			loadMaps(part1, tempResult)
+			loadRooms(part1, tempResult)
 		}
 	}
 
-	class GameMap(
-			val mapNo: Int,
+	class Room(
+			val roomNo: Int,
 			val width: Int, val height: Int,
 			val lines: List<String>
 	)

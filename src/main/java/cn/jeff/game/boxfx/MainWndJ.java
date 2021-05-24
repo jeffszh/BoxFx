@@ -4,16 +4,16 @@ public class MainWndJ {
 
 	public MainWnd k;
 
-	public void prevStage() {
-		k.prevStage();
+	public void prevRoom() {
+		k.prevRoom();
 	}
 
-	public void selectStage() {
-		k.selectStage();
+	public void selectRoom() {
+		k.selectRoom();
 	}
 
-	public void nextStage() {
-		k.nextStage();
+	public void nextRoom() {
+		k.nextRoom();
 	}
 
 }

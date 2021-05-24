@@ -1,7 +1,8 @@
 package cn.jeff.game.boxfx
 
 /**
- * 这个类代表棋盘中的一格。
+ * # 格子
+ * 棋盘中的一格。
  */
 enum class Cell {
 

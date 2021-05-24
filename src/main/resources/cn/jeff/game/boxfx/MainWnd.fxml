@@ -11,13 +11,13 @@
 			fx:controller="cn.jeff.game.boxfx.MainWndJ">
 	<top>
 		<FlowPane alignment="CENTER" columnHalignment="CENTER" hgap="10.0" vgap="10.0" BorderPane.alignment="CENTER">
-			<Button onAction="#prevStage" mnemonicParsing="false" text="&lt;&lt;">
+			<Button onAction="#prevRoom" mnemonicParsing="false" text="&lt;&lt;">
 				<tooltip>
 					<Tooltip text="上一关"/>
 				</tooltip>
 			</Button>
-			<Button mnemonicParsing="false" onAction="#selectStage" text="选关"/>
-			<Button mnemonicParsing="false" onAction="#nextStage" text="&gt;&gt;">
+			<Button mnemonicParsing="false" onAction="#selectRoom" text="选关"/>
+			<Button mnemonicParsing="false" onAction="#nextRoom" text="&gt;&gt;">
 				<tooltip>
 					<Tooltip text="下一关"/>
 				</tooltip>
