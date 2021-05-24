@@ -51,22 +51,28 @@ class MainWnd : View("推箱子智能版") {
 	fun selectStage() {
 		inputNumber(currentMapNo, "请输入关卡号码") { mapNo ->
 			MapManager.maps[mapNo]?.also {
+				// 找到这关，就直接加载。
 				loadMap(it)
 			} ?: apply {
+				// 找不到，首先向后搜。
 				MapManager.maps.tailMap(mapNo).also { tailMap ->
+					// 如果向后搜找到了，问TA要不要改为这关。
 					if (tailMap.isNotEmpty()) {
 						val otherMap = tailMap.values.first()
 						confirm("找不到第 $mapNo 关，是否改为加载第 ${otherMap.mapNo} 关？") {
 							loadMap(otherMap)
 						}
 					} else {
+						// 向后搜找不到，就向前搜。
 						MapManager.maps.headMap(mapNo).also { headMap ->
+							// 如果向前搜找到了，问TA要不要改为这关。
 							if (headMap.isNotEmpty()) {
 								val otherMap = headMap.values.last()
 								confirm("找不到第 $mapNo 关，是否改为加载第 ${otherMap.mapNo} 关？") {
 									loadMap(otherMap)
 								}
 							} else {
+								// 不会运行到这里，不可能后面和前面都没有，除非一关都没有。
 								warning("找不到第 $mapNo 关。")
 							}
 						}
