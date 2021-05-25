@@ -74,13 +74,8 @@ class Board : View() {
 					lineOfImageViews.add(imageview(cell.toImage()))
 
 					// 顺便找到人的位置
-					when (cell) {
-						Cell.MAN, Cell.MAN_DEST -> {
-							manLocation = LocationXY(x, y)
-						}
-						else -> {
-							// do nothing
-						}
+					if (cell.isMan()) {
+						manLocation = LocationXY(x, y)
 					}
 				}
 				imageViews.add(lineOfImageViews)

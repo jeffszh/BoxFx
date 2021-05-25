@@ -8,27 +8,43 @@ enum class Cell {
 
 	OUTSIDE {
 		override fun isPassable() = false
+		override fun isMan() = false
+		override fun isBox() = false
 	},
 	WALL {
 		override fun isPassable() = false
+		override fun isMan() = false
+		override fun isBox() = false
 	},
 	SPACE {
 		override fun isPassable() = true
+		override fun isMan() = false
+		override fun isBox() = false
 	},
 	SPACE_DEST {
 		override fun isPassable() = true
+		override fun isMan() = false
+		override fun isBox() = false
 	},
 	BOX {
 		override fun isPassable() = false
+		override fun isMan() = false
+		override fun isBox() = true
 	},
 	BOX_DEST {
 		override fun isPassable() = false
+		override fun isMan() = false
+		override fun isBox() = true
 	},
 	MAN {
 		override fun isPassable() = true
+		override fun isMan() = true
+		override fun isBox() = false
 	},
 	MAN_DEST {
 		override fun isPassable() = true
+		override fun isMan() = true
+		override fun isBox() = false
 	};
 
 //	val toInt = ordinal
@@ -38,5 +54,7 @@ enum class Cell {
 	}
 
 	abstract fun isPassable(): Boolean
+	abstract fun isMan(): Boolean
+	abstract fun isBox(): Boolean
 
 }
