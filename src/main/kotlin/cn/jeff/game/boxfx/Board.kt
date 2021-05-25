@@ -1,8 +1,13 @@
 package cn.jeff.game.boxfx
 
+import cn.jeff.utils.ArrayXY
+import cn.jeff.utils.LocationXY
+import javafx.event.EventHandler
 import javafx.geometry.Pos
 import javafx.scene.image.Image
 import javafx.scene.image.ImageView
+import javafx.scene.input.KeyCode
+import javafx.scene.input.KeyEvent
 import tornadofx.*
 
 /**
@@ -36,22 +41,75 @@ class Board : View() {
 
 	override val root = gridpane {
 		alignment = Pos.CENTER
+		isFocusTraversable = true
+		onKeyPressed = EventHandler {
+			processKey(it)
+		}
 	}
 
 	private val imageViews = mutableListOf<MutableList<ImageView>>()
 
-	fun setScene(scene: Scene) {
+	private var manLocation = LocationXY(0, 0)
+	private val cells = object : ArrayXY<Cell> {
+		override fun get(locationXY: LocationXY): Cell =
+				scene.cells[locationXY.y][locationXY.x]
+	}
+
+	var scene: Scene = Scene(0, 0)
+		set(value) {
+			field = value
+			internalSetScene(value)
+		}
+	private val width get() = scene.width
+	private val height get() = scene.height
+
+	private fun internalSetScene(scene: Scene) {
 		root.clear()
 		imageViews.clear()
 		println("加载scene，宽度=${scene.width}，高度=${scene.height}")
-		scene.cells.forEach { cellList ->
+		scene.cells.forEachIndexed { y, cellList ->
 			root.row {
 				val lineOfImageViews = mutableListOf<ImageView>()
-				cellList.forEach { cell ->
+				cellList.forEachIndexed { x, cell ->
 					lineOfImageViews.add(imageview(cell.toImage()))
+
+					// 顺便找到人的位置
+					when (cell) {
+						Cell.MAN, Cell.MAN_DEST -> {
+							manLocation = LocationXY(x, y)
+						}
+						else -> {
+							// do nothing
+						}
+					}
 				}
 				imageViews.add(lineOfImageViews)
 			}
+		}
+	}
+
+	private fun processKey(k: KeyEvent) {
+		// println(k)
+		when (k.code) {
+			KeyCode.UP -> move(0, -1)
+			KeyCode.DOWN -> move(0, 1)
+			KeyCode.LEFT -> move(-1, 0)
+			KeyCode.RIGHT -> move(1, 0)
+			else -> {
+				// do nothing
+			}
+		}
+	}
+
+	private fun move(deltaX: Int, deltaY: Int) {
+		// println("移动：$deltaX, $deltaY")
+		val location0 = manLocation
+		val location1 = LocationXY(location0.x + deltaX, location0.y + deltaY)
+		if (location1.x !in 0 until width) return
+		if (location1.y !in 0 until height) return
+		val cell0 = cells[location0]
+		val cell1 = cells[location1]
+		if (cell1.isPassable()) {
 		}
 	}
 

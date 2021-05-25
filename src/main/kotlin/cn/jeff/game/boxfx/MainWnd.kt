@@ -35,7 +35,7 @@ class MainWnd : View("推箱子智能版") {
 
 	private fun loadRoom(room: RoomManager.Room) {
 		val scene = Scene(room)
-		board.setScene(scene)
+		board.scene = scene
 		currentRoomNo = room.roomNo
 	}
 
