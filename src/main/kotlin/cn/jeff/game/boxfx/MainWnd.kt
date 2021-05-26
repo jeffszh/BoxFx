@@ -1,5 +1,7 @@
 package cn.jeff.game.boxfx
 
+import cn.jeff.game.boxfx.data.RoomRecord
+import cn.jeff.game.boxfx.data.gameRecord
 import cn.jeff.utils.Toast
 import cn.jeff.utils.inputNumber
 import javafx.fxml.FXMLLoader
@@ -30,13 +32,17 @@ class MainWnd : View("推箱子智能版") {
 	}
 
 	private fun loadFirstRoom() {
-		loadRoom(RoomManager.rooms.values.first())
+		loadRoom(gameRecord.lastPlayedRoom?.let {
+			RoomManager.rooms[it]
+		} ?: RoomManager.rooms.values.first())
 	}
 
 	private fun loadRoom(room: RoomManager.Room) {
 		val scene = Scene(room)
 		board.scene = scene
 		currentRoomNo = room.roomNo
+		gameRecord.lastPlayedRoom = currentRoomNo
+		gameRecord.save()
 	}
 
 	fun prevRoom() {
