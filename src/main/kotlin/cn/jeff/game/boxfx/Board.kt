@@ -1,8 +1,11 @@
 package cn.jeff.game.boxfx
 
+import cn.jeff.game.boxfx.event.RoomSuccessEvent
 import cn.jeff.utils.ArrayXY
 import cn.jeff.utils.LocationXY
+import cn.jeff.utils.Toast
 import javafx.beans.property.ObjectProperty
+import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.event.EventHandler
 import javafx.geometry.Pos
@@ -60,9 +63,13 @@ class Board : View() {
 		set(value) {
 			field = value
 			internalSetScene(value)
+			stepCount.value = 0
+			isSuccess = false
 		}
 	private val width get() = scene.width
 	private val height get() = scene.height
+	val stepCount = SimpleIntegerProperty(0)
+	private var isSuccess = false
 
 	private fun internalSetScene(scene: Scene) {
 		root.clear()
@@ -91,6 +98,7 @@ class Board : View() {
 
 	private fun processKey(k: KeyEvent) {
 		// println(k)
+		if (isSuccess) return
 		when (k.code) {
 			KeyCode.UP -> moveOrPush(0, -1)
 			KeyCode.DOWN -> moveOrPush(0, 1)
@@ -139,8 +147,26 @@ class Board : View() {
 					cells[location1].value = newCell1
 					cells[location2].value = newCell2
 					manLocation = manLocation.delta(deltaX, deltaY)
+					stepCount.value++
+					checkSuccess()
 				}
 			}
+		}
+	}
+
+	/**
+	 * 检查本关是否已成功。
+	 */
+	private fun checkSuccess() {
+		val unresolvedBoxes = internalCellList.sumBy {
+			it.count { cell ->
+				cell.value == Cell.BOX
+			}
+		}
+		if (unresolvedBoxes == 0) {
+			isSuccess = true
+			fire(RoomSuccessEvent(stepCount.value))
+			Toast("恭喜！你已完成本关！").show(2000)
 		}
 	}
 

@@ -2,8 +2,11 @@ package cn.jeff.game.boxfx
 
 import cn.jeff.game.boxfx.data.RoomRecord
 import cn.jeff.game.boxfx.data.gameRecord
+import cn.jeff.game.boxfx.event.RoomSuccessEvent
 import cn.jeff.utils.Toast
 import cn.jeff.utils.inputNumber
+import javafx.beans.property.SimpleIntegerProperty
+import javafx.beans.property.SimpleStringProperty
 import javafx.fxml.FXMLLoader
 import javafx.scene.layout.BorderPane
 import tornadofx.*
@@ -13,7 +16,9 @@ class MainWnd : View("推箱子智能版") {
 	override val root: BorderPane
 	private val j: MainWndJ
 	private val board: Board
-	private var currentRoomNo = 0
+	private val currentRoomNo = SimpleIntegerProperty(0)
+	private val bestStepCount = SimpleStringProperty()
+	private val bestStepByAI = SimpleStringProperty()
 
 	init {
 		primaryStage.isResizable = true
@@ -29,6 +34,10 @@ class MainWnd : View("推箱子智能版") {
 		root.center = board.root
 
 		loadFirstRoom()
+
+		subscribe<RoomSuccessEvent> { event ->
+			onRoomSuccess(event.stepCount)
+		}
 	}
 
 	private fun loadFirstRoom() {
@@ -40,13 +49,30 @@ class MainWnd : View("推箱子智能版") {
 	private fun loadRoom(room: RoomManager.Room) {
 		val scene = Scene(room)
 		board.scene = scene
-		currentRoomNo = room.roomNo
-		gameRecord.lastPlayedRoom = currentRoomNo
+		currentRoomNo.value = room.roomNo
+		gameRecord.lastPlayedRoom = currentRoomNo.value
 		gameRecord.save()
+		bestStepCount.value = gameRecord.roomRecords[currentRoomNo.value]
+				?.bestStepCount?.toString()
+		bestStepByAI.value = gameRecord.roomRecords[currentRoomNo.value]
+				?.stepCountByAi?.toString()
+		bindStatusLabel()
+	}
+
+	private fun bindStatusLabel() {
+		val stepCount = board.stepCount
+		val binding = stringBinding(currentRoomNo, stepCount, bestStepCount, bestStepByAI) {
+			"第${currentRoomNo.value}关  当前步数：${stepCount.value} ${bestStepCount.value?.let {
+				"以往最佳步数：$it"
+			} ?: ""} ${bestStepByAI.value?.let {
+				"AI最佳步数：$it"
+			} ?: ""}"
+		}
+		j.statusLabel.bind(binding)
 	}
 
 	fun prevRoom() {
-		val subMap = RoomManager.rooms.headMap(currentRoomNo)
+		val subMap = RoomManager.rooms.headMap(currentRoomNo.value)
 		if (subMap.isNotEmpty()) {
 			loadRoom(subMap.values.last())
 		} else {
@@ -55,7 +81,7 @@ class MainWnd : View("推箱子智能版") {
 	}
 
 	fun selectRoom() {
-		inputNumber(currentRoomNo, "请输入关卡号码") { roomNo ->
+		inputNumber(currentRoomNo.value, "请输入关卡号码") { roomNo ->
 			RoomManager.rooms[roomNo]?.also {
 				// 找到这关，就直接加载。
 				loadRoom(it)
@@ -89,11 +115,27 @@ class MainWnd : View("推箱子智能版") {
 	}
 
 	fun nextRoom() {
-		val subMap = RoomManager.rooms.tailMap(currentRoomNo + 1)
+		val subMap = RoomManager.rooms.tailMap(currentRoomNo.value + 1)
 		if (subMap.isNotEmpty()) {
 			loadRoom(subMap.values.first())
 		} else {
 			Toast("后面没有了。").show()
+		}
+	}
+
+	fun playAgain() {
+		RoomManager.rooms[currentRoomNo.value]?.let {
+			loadRoom(it)
+		}
+	}
+
+	private fun onRoomSuccess(stepCount: Int) {
+		bestStepCount.value = stepCount.toString()
+		val roomRecord = gameRecord.roomRecords[currentRoomNo.value] ?: RoomRecord()
+		if (roomRecord.bestStepCount ?: Int.MAX_VALUE > stepCount) {
+			roomRecord.bestStepCount = stepCount
+			gameRecord.roomRecords[currentRoomNo.value] = roomRecord
+			gameRecord.save()
 		}
 	}
 

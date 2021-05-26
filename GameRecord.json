@@ -1,4 +1,14 @@
 {
-  "lastPlayedRoom": 3,
-  "roomRecords": {}
+  "lastPlayedRoom": 1,
+  "roomRecords": {
+    "1": {
+      "bestStepCount": 6
+    },
+    "2": {
+      "bestStepCount": 31
+    },
+    "3": {
+      "bestStepCount": 27
+    }
+  }
 }
