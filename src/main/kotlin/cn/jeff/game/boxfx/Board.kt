@@ -68,9 +68,13 @@ class Board : View() {
 	private var manLocation = LocationXY(0, 0)
 	private var internalCellList =
 			listOf(listOf<ObjectProperty<Cell>>())
-	private val cells = object : ArrayXY<ObjectProperty<Cell>> {
-		override fun get(locationXY: LocationXY): ObjectProperty<Cell> =
-				internalCellList[locationXY.y][locationXY.x]
+	private val cells = object : ArrayXY<Cell> {
+		override fun get(locationXY: LocationXY): Cell =
+				internalCellList[locationXY.y][locationXY.x].value
+
+		operator fun set(locationXY: LocationXY, value: Cell) {
+			internalCellList[locationXY.y][locationXY.x].value = value
+		}
 	}
 
 	var scene: Scene = Scene(0, 0)
@@ -152,17 +156,17 @@ class Board : View() {
 		if (location2.x !in 0 until width) return
 		if (location2.y !in 0 until height) return
 
-		val cell0 = cells[location0].value
-		val cell1 = cells[location1].value
-		val cell2 = cells[location2].value
+		val cell0 = cells[location0]
+		val cell1 = cells[location1]
+		val cell2 = cells[location2]
 		when {
 			// 移动
 			cell1.isPassable() -> {
 				val newCell1 = cell1 + cell0
 				val newCell0 = cell0 - cell0
 				if (newCell0 != null && newCell1 != null) {
-					cells[location0].value = newCell0
-					cells[location1].value = newCell1
+					cells[location0] = newCell0
+					cells[location1] = newCell1
 					manLocation = manLocation.delta(deltaX, deltaY)
 				}
 			}
@@ -172,9 +176,9 @@ class Board : View() {
 				val newCell1 = (cell1 - cell1 ?: Cell.OUTSIDE) + cell0
 				val newCell0 = cell0 - cell0
 				if (newCell0 != null && newCell1 != null && newCell2 != null) {
-					cells[location0].value = newCell0
-					cells[location1].value = newCell1
-					cells[location2].value = newCell2
+					cells[location0] = newCell0
+					cells[location1] = newCell1
+					cells[location2] = newCell2
 					manLocation = manLocation.delta(deltaX, deltaY)
 					stepCount.value++
 					checkSuccess()
