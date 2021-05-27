@@ -230,7 +230,9 @@ class Board : View() {
 //		}
 
 		// 让timeTick属性每半秒增长一次，通过绑定就可以实现效果了。
-		timeTick.value++
+		if (!isSuccess) {
+			timeTick.value++
+		}
 	}
 
 }
