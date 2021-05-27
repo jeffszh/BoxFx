@@ -3,6 +3,7 @@ package cn.jeff.game.boxfx
 import cn.jeff.game.boxfx.data.RoomRecord
 import cn.jeff.game.boxfx.data.gameRecord
 import cn.jeff.game.boxfx.event.RoomSuccessEvent
+import cn.jeff.game.boxfx.event.TimerEvent
 import cn.jeff.utils.Toast
 import cn.jeff.utils.inputNumber
 import javafx.beans.property.SimpleIntegerProperty
@@ -37,6 +38,9 @@ class MainWnd : View("推箱子智能版") {
 
 		subscribe<RoomSuccessEvent> { event ->
 			onRoomSuccess(event.stepCount)
+		}
+		subscribe<TimerEvent> {
+			board.onTimer()
 		}
 	}
 

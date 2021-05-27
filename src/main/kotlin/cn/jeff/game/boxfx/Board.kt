@@ -12,6 +12,7 @@ import javafx.geometry.Pos
 import javafx.scene.image.Image
 import javafx.scene.input.KeyCode
 import javafx.scene.input.KeyEvent
+import javafx.scene.input.MouseButton
 import tornadofx.*
 
 /**
@@ -21,27 +22,40 @@ import tornadofx.*
  */
 class Board : View() {
 
-	private val cellImgMap = mapOf(
-			Cell.OUTSIDE to
-					Image("/img/out_side.png"),
-			Cell.WALL to
-					Image("/img/wall.png"),
-			Cell.SPACE to
-					Image("/img/space.png"),
-			Cell.SPACE_DEST to
-					Image("/img/space_dest.png"),
-			Cell.BOX to
-					Image("/img/box.png"),
-			Cell.BOX_DEST to
-					Image("/img/box_dest.png"),
-			Cell.MAN to
-					Image("/img/man.png"),
-			Cell.MAN_DEST to
-					Image("/img/man_dest.png")
-	)
+	companion object {
+		private val outsideImage = Image("/img/out_side.png")
+		private val wallImage = Image("/img/wall.png")
+		private val spaceImage = Image("/img/space.png")
+		private val spaceDestImage = Image("/img/space_dest.png")
+		private val boxImage = Image("/img/box.png")
+		private val boxDestImage = Image("/img/box_dest.png")
+		private val manImage = Image("/img/man.png")
+		private val manImageR = Image("/img/man_r.png")
+		private val manDestImage = Image("/img/man_dest.png")
+		private val manDestImageR = Image("/img/man_dest_r.png")
 
-	private fun Cell.toImage(): Image =
-			cellImgMap[this] ?: kotlin.error("不可能")
+		private val cellImgMap = mapOf(
+				Cell.OUTSIDE to
+						listOf(outsideImage),
+				Cell.WALL to
+						listOf(wallImage),
+				Cell.SPACE to
+						listOf(spaceImage),
+				Cell.SPACE_DEST to
+						listOf(spaceDestImage),
+				Cell.BOX to
+						listOf(boxImage),
+				Cell.BOX_DEST to
+						listOf(boxDestImage),
+				Cell.MAN to
+						listOf(manImage, manImageR),
+				Cell.MAN_DEST to
+						listOf(manDestImage, manDestImageR)
+		)
+
+		private fun Cell.toImage(): List<Image> =
+				cellImgMap[this] ?: kotlin.error("不可能")
+	}
 
 	override val root = gridpane {
 		alignment = Pos.CENTER
@@ -81,9 +95,20 @@ class Board : View() {
 			root.row {
 				obCellList.forEachIndexed { x, cell ->
 					imageview {
-						imageProperty().bind(cell.objectBinding {
-							it?.toImage()
+						imageProperty().bind(cell.objectBinding(timeTick) {
+							it?.toImage()?.let { imgLst ->
+								if (imgLst.count() > 1) {
+									imgLst[timeTick.value and 0x01]
+								} else {
+									imgLst.first()
+								}
+							}
 						})
+						setOnMouseClicked {
+							if (it.button == MouseButton.PRIMARY) {
+								onCellClick(x, y)
+							}
+						}
 					}
 
 					// 顺便找到人的位置
@@ -108,6 +133,10 @@ class Board : View() {
 				// do nothing
 			}
 		}
+	}
+
+	private fun onCellClick(x: Int, y: Int) {
+		Toast("点击：$x, $y").show()
 	}
 
 	private fun LocationXY.delta(dx: Int, dy: Int) =
@@ -168,6 +197,36 @@ class Board : View() {
 			fire(RoomSuccessEvent(stepCount.value))
 			Toast("恭喜！你已完成本关！").show(2000)
 		}
+	}
+
+	/**
+	 * 每半秒增长1的可观察变量，用于产生一些效果。
+	 */
+	private val timeTick = SimpleIntegerProperty(0)
+
+	/**
+	 * 定时器，用于使人图标动起来。
+	 */
+	fun onTimer() {
+		// println("定时器！")
+
+		// 用下面的方法不可行，因为已绑定的属性是不可以赋值的，只好引入更复杂的绑定来实现效果了。
+//		root.children.forEach {
+//			if (it is ImageView) {
+//				when (it.image) {
+//					manImage -> manImageR
+//					manImageR -> manImage
+//					manDestImage -> manDestImageR
+//					manDestImageR -> manDestImage
+//					else -> null
+//				}?.also { mirrorImage ->
+//					it.image = mirrorImage
+//				}
+//			}
+//		}
+
+		// 让timeTick属性每半秒增长一次，通过绑定就可以实现效果了。
+		timeTick.value++
 	}
 
 }
