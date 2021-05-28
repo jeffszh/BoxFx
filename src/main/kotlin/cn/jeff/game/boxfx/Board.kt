@@ -72,7 +72,7 @@ class Board : View() {
 		override fun get(locationXY: LocationXY): Cell =
 				internalCellList[locationXY.y][locationXY.x].value
 
-		operator fun set(locationXY: LocationXY, value: Cell) {
+		override operator fun set(locationXY: LocationXY, value: Cell) {
 			internalCellList[locationXY.y][locationXY.x].value = value
 		}
 	}

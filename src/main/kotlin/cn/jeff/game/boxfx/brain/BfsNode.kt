@@ -8,8 +8,13 @@ abstract class BfsNode<T>(
 		val fromLink: NodeLink<T>,
 		val backLink: NodeLink<T>
 ) {
-	@FunctionalInterface
-	interface NodeLink<T> {
+	fun interface NodeLink<T> {
 		fun link(): T
+	}
+
+	companion object {
+		val dummyLink = {
+			error("無效link！")
+		}
 	}
 }

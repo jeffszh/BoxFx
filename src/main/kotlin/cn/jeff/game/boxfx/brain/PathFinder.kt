@@ -1,6 +1,7 @@
 package cn.jeff.game.boxfx.brain
 
 import cn.jeff.game.boxfx.Cell
+import cn.jeff.game.boxfx.brain.BfsNode.Companion.dummyLink
 import cn.jeff.utils.ArrayXY
 import cn.jeff.utils.LocationXY
 
@@ -41,12 +42,6 @@ class PathFinder(
 
 		override fun LocationNode.checkDone(): Boolean {
 			TODO("not implemented") //To change body of created functions use File | Settings | File Templates.
-		}
-	}
-
-	private val dummyLink = object : BfsNode.NodeLink<LocationNode> {
-		override fun link(): LocationNode {
-			error("根节点不能访问link！")
 		}
 	}
 
