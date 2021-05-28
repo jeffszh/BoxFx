@@ -1,5 +1,6 @@
 package cn.jeff.game.boxfx
 
+import cn.jeff.game.boxfx.brain.PathFinder
 import cn.jeff.game.boxfx.event.RoomSuccessEvent
 import cn.jeff.utils.ArrayXY
 import cn.jeff.utils.LocationXY
@@ -140,11 +141,19 @@ class Board : View() {
 	}
 
 	private fun onCellClick(x: Int, y: Int) {
-		Toast("点击：$x, $y").show()
+		// Toast("点击：$x, $y").show()
+		val searchResult = PathFinder(width, height, cells, manLocation, LocationXY(x, y)).search()
+		if (searchResult.isEmpty()) {
+			Toast("去不了那里！").show()
+		} else {
+			var location = manLocation
+			searchResult.forEach {
+				location = it(location)
+				println(location)
+			}
+			println("共 ${searchResult.count()} 步。")
+		}
 	}
-
-	private fun LocationXY.delta(dx: Int, dy: Int) =
-			LocationXY(x + dx, y + dy)
 
 	private fun moveOrPush(deltaX: Int, deltaY: Int) {
 		// println("移动：$deltaX, $deltaY")
