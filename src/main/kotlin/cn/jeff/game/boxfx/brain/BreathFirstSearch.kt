@@ -8,7 +8,7 @@ package cn.jeff.game.boxfx.brain
 abstract class BreathFirstSearch<N : BfsNode<N, P>, P> {
 
 	var name = "BFS"
-	var onNewLevel = { _: Int -> }
+	var onNewLevel: suspend (level: Int, nodeCount: Int) -> Unit = { _, _ -> }
 
 	abstract fun N.generateNext(): List<N>
 
@@ -17,7 +17,7 @@ abstract class BreathFirstSearch<N : BfsNode<N, P>, P> {
 	val searchedNodes = hashSetOf<N>()
 	val searchingNodes = hashSetOf<N>()
 
-	fun search(root: N): List<(P) -> P> {
+	suspend fun search(root: N): List<(P) -> P> {
 		searchingNodes.add(root)
 		return search(0)
 	}
@@ -26,9 +26,10 @@ abstract class BreathFirstSearch<N : BfsNode<N, P>, P> {
 	 * # 搜索一层
 	 * 为了方便实现双向搜索，使用逐层搜索的方式，因此跟通常的广度优先搜索算法略有不同。
 	 */
-	private tailrec fun search(level: Int): List<(P) -> P> {
+	private tailrec suspend fun search(level: Int): List<(P) -> P> {
+		println("$name 准备搜索第 $level 层。")
+		onNewLevel(level, searchedNodes.count() + searchingNodes.count())
 		println("$name 开始搜索第 $level 层。")
-		onNewLevel(level)
 		// 先查找是否有符合结束条件的节点
 		searchingNodes.forEach {
 			if (it.checkDone()) {
