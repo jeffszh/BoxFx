@@ -36,26 +36,26 @@ class Board : View() {
 		private val manDestImageR = Image("/img/man_dest_r.png")
 
 		private val cellImgMap = mapOf(
-				Cell.OUTSIDE to
-						listOf(outsideImage),
-				Cell.WALL to
-						listOf(wallImage),
-				Cell.SPACE to
-						listOf(spaceImage),
-				Cell.SPACE_DEST to
-						listOf(spaceDestImage),
-				Cell.BOX to
-						listOf(boxImage),
-				Cell.BOX_DEST to
-						listOf(boxDestImage),
-				Cell.MAN to
-						listOf(manImage, manImageR),
-				Cell.MAN_DEST to
-						listOf(manDestImage, manDestImageR)
+			Cell.OUTSIDE to
+					listOf(outsideImage),
+			Cell.WALL to
+					listOf(wallImage),
+			Cell.SPACE to
+					listOf(spaceImage),
+			Cell.SPACE_DEST to
+					listOf(spaceDestImage),
+			Cell.BOX to
+					listOf(boxImage),
+			Cell.BOX_DEST to
+					listOf(boxDestImage),
+			Cell.MAN to
+					listOf(manImage, manImageR),
+			Cell.MAN_DEST to
+					listOf(manDestImage, manDestImageR)
 		)
 
 		private fun Cell.toImage(): List<Image> =
-				cellImgMap[this] ?: kotlin.error("不可能")
+			cellImgMap[this] ?: kotlin.error("不可能")
 	}
 
 	override val root = gridpane {
@@ -68,10 +68,10 @@ class Board : View() {
 
 	private var manLocation = LocationXY(0, 0)
 	private var internalCellList =
-			listOf(listOf<ObjectProperty<Cell>>())
+		listOf(listOf<ObjectProperty<Cell>>())
 	private val cells = object : ArrayXY<Cell> {
 		override fun get(locationXY: LocationXY): Cell =
-				internalCellList[locationXY.y][locationXY.x].value
+			internalCellList[locationXY.y][locationXY.x].value
 
 		override operator fun set(locationXY: LocationXY, value: Cell) {
 			internalCellList[locationXY.y][locationXY.x].value = value
@@ -152,6 +152,15 @@ class Board : View() {
 				println(location)
 			}
 			println("共 ${searchResult.count()} 步。")
+			runAsync {
+				searchResult.forEach {
+					it as PathFinder.Direction
+					//Thread.sleep(500)
+					ui { _ ->
+						moveOrPush(it.dx, it.dy)
+					}
+				}
+			}
 		}
 	}
 

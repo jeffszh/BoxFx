@@ -10,14 +10,14 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.yield
 
 class PathFinder(
-		private val width: Int,
-		private val height: Int,
-		private val cells: ArrayXY<Cell>,
-		private val startLocation: LocationXY,
-		private val destLocation: LocationXY
+	private val width: Int,
+	private val height: Int,
+	private val cells: ArrayXY<Cell>,
+	private val startLocation: LocationXY,
+	private val destLocation: LocationXY
 ) {
 
-	enum class Direction(private val dx: Int, private val dy: Int) : (LocationXY) -> LocationXY {
+	enum class Direction(val dx: Int, val dy: Int) : (LocationXY) -> LocationXY {
 		LEFT(-1, 0) {
 			override val inverseOperation get() = RIGHT
 		},
@@ -33,20 +33,20 @@ class PathFinder(
 		;
 
 		override fun invoke(p1: LocationXY) =
-				LocationXY(p1.x + dx, p1.y + dy)
+			LocationXY(p1.x + dx, p1.y + dy)
 
 		abstract val inverseOperation: Direction
 	}
 
 	operator fun LocationXY.plus(dir: Direction) =
-			dir(this)
+		dir(this)
 
 	private class LocationNode(
-			val locationXY: LocationXY,
-			distance: Int,
-			fromLink: (LocationXY) -> LocationXY,
-			backLink: () -> LocationNode)
-		: BfsNode<LocationNode, LocationXY>(distance, fromLink, backLink) {
+		val locationXY: LocationXY,
+		distance: Int,
+		fromLink: (LocationXY) -> LocationXY,
+		backLink: () -> LocationNode
+	) : BfsNode<LocationNode, LocationXY>(distance, fromLink, backLink) {
 
 		override fun hashCode(): Int {
 			// println("计算哈希。")
@@ -54,7 +54,7 @@ class PathFinder(
 		}
 
 		override fun equals(other: Any?): Boolean =
-				other is LocationNode && locationXY == other.locationXY
+			other is LocationNode && locationXY == other.locationXY
 	}
 
 	/*
@@ -166,7 +166,7 @@ class PathFinder(
 	 */
 
 	private fun calcAdjacencyLocations(
-			locationXY: LocationXY
+		locationXY: LocationXY
 	) = Direction.values().associateWith {
 		locationXY + it
 	}.filter { (_, v) ->
@@ -176,13 +176,14 @@ class PathFinder(
 	}
 
 	private val forwardSearch: BreathFirstSearch<LocationNode, LocationXY> = object :
-			BreathFirstSearch<LocationNode, LocationXY>() {
+		BreathFirstSearch<LocationNode, LocationXY>() {
 		init {
 			name = "正向搜索"
 			onNewLevel = { level, nodeCount ->
 				if (nodeCount >
-						backwardSearch.searchingNodes.count() +
-						backwardSearch.searchedNodes.count()) {
+					backwardSearch.searchingNodes.count() +
+					backwardSearch.searchedNodes.count()
+				) {
 					println("$name 暂停搜索第 $level 层。")
 					yield()
 				}
@@ -190,11 +191,11 @@ class PathFinder(
 		}
 
 		override fun LocationNode.generateNext() = calcAdjacencyLocations(locationXY)
-				.map { (direction, newLocation) ->
-					LocationNode(newLocation, distance + 1, direction) {
-						this
-					}
+			.map { (direction, newLocation) ->
+				LocationNode(newLocation, distance + 1, direction) {
+					this
 				}
+			}
 
 		override fun LocationNode.checkDone(): Boolean {
 			if (locationXY == matchPoint) {
@@ -209,13 +210,14 @@ class PathFinder(
 	}
 
 	private val backwardSearch: BreathFirstSearch<LocationNode, LocationXY> = object :
-			BreathFirstSearch<LocationNode, LocationXY>() {
+		BreathFirstSearch<LocationNode, LocationXY>() {
 		init {
 			name = "反向搜索"
 			onNewLevel = { level, nodeCount ->
 				if (nodeCount >
-						forwardSearch.searchingNodes.count() +
-						forwardSearch.searchedNodes.count()) {
+					forwardSearch.searchingNodes.count() +
+					forwardSearch.searchedNodes.count()
+				) {
 					println("$name 暂停搜索第 $level 层。")
 					yield()
 				}
@@ -223,11 +225,11 @@ class PathFinder(
 		}
 
 		override fun LocationNode.generateNext() = calcAdjacencyLocations(locationXY)
-				.map { (direction, newLocation) ->
-					LocationNode(newLocation, distance + 1, direction) {
-						this
-					}
+			.map { (direction, newLocation) ->
+				LocationNode(newLocation, distance + 1, direction) {
+					this
 				}
+			}
 
 		override fun LocationNode.checkDone(): Boolean {
 			if (locationXY == matchPoint) {
@@ -245,16 +247,20 @@ class PathFinder(
 
 	fun search() = runBlocking {
 		val forwardSearchResult = async {
-			forwardSearch.search(root = LocationNode(
+			forwardSearch.search(
+				root = LocationNode(
 					startLocation, 0,
 					{ it }, dummyLink
-			))
+				)
+			)
 		}
 		val backwardSearchResult = async {
-			backwardSearch.search(root = LocationNode(
+			backwardSearch.search(
+				root = LocationNode(
 					destLocation, 0,
 					{ it }, dummyLink
-			))
+				)
+			)
 		}
 		val result = awaitAll(forwardSearchResult, backwardSearchResult)
 		return@runBlocking result[0] + result[1].reversed().map {
