@@ -12,7 +12,7 @@ object RoomManager {
 
 	init {
 		val lines = InputStreamReader(
-				javaClass.getResourceAsStream("/room/build_in_rooms.txt")).use {
+				javaClass.getResourceAsStream("/room/build_in_rooms.txt")!!).use {
 			it.readLines()
 		}
 		val roomList = loadRooms(lines)
@@ -37,7 +37,7 @@ object RoomManager {
 		tempResult.add(Room(
 				roomNo = roomNo,
 				width = lines[lastHeaderIndex + 1].length,
-				height = lines.count() - lastHeaderIndex,
+				height = lines.count() - lastHeaderIndex - 1,
 				lines = part2.subList(1, part2.count())
 		))
 

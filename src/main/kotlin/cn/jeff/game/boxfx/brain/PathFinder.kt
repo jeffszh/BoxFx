@@ -17,15 +17,29 @@ class PathFinder(
 		private val destLocation: LocationXY
 ) {
 
-	enum class Direction(val dx: Int, val dy: Int) {
-		LEFT(-1, 0),
-		RIGHT(1, 0),
-		UP(0, -1),
-		DOWN(0, 1),
+	enum class Direction(private val dx: Int, private val dy: Int) : (LocationXY) -> LocationXY {
+		LEFT(-1, 0) {
+			override val inverseOperation get() = RIGHT
+		},
+		RIGHT(1, 0) {
+			override val inverseOperation get() = LEFT
+		},
+		UP(0, -1) {
+			override val inverseOperation get() = DOWN
+		},
+		DOWN(0, 1) {
+			override val inverseOperation get() = UP
+		},
+		;
+
+		override fun invoke(p1: LocationXY) =
+				LocationXY(p1.x + dx, p1.y + dy)
+
+		abstract val inverseOperation: Direction
 	}
 
 	operator fun LocationXY.plus(dir: Direction) =
-			LocationXY(x + dir.dx, y + dir.dy)
+			dir(this)
 
 	private class LocationNode(
 			val locationXY: LocationXY,
@@ -176,10 +190,8 @@ class PathFinder(
 		}
 
 		override fun LocationNode.generateNext() = calcAdjacencyLocations(locationXY)
-				.map { (k, v) ->
-					LocationNode(v, distance + 1, {
-						it + k
-					}) {
+				.map { (direction, newLocation) ->
+					LocationNode(newLocation, distance + 1, direction) {
 						this
 					}
 				}
@@ -211,10 +223,8 @@ class PathFinder(
 		}
 
 		override fun LocationNode.generateNext() = calcAdjacencyLocations(locationXY)
-				.map { (k, v) ->
-					LocationNode(v, distance + 1, {
-						it + k
-					}) {
+				.map { (direction, newLocation) ->
+					LocationNode(newLocation, distance + 1, direction) {
 						this
 					}
 				}
@@ -247,7 +257,13 @@ class PathFinder(
 			))
 		}
 		val result = awaitAll(forwardSearchResult, backwardSearchResult)
-		return@runBlocking result[0] + result[1].reversed()
+		return@runBlocking result[0] + result[1].reversed().map {
+			if (it is Direction) {
+				it.inverseOperation
+			} else {
+				error("内部类型出错！")
+			}
+		}
 	}
 
 }
