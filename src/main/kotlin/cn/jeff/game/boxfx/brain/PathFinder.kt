@@ -161,9 +161,18 @@ class PathFinder(
 		cells[v].isPassable()
 	}
 
-	private val forwardSearch = object : BreathFirstSearch<LocationNode, LocationXY>() {
+	private val forwardSearch: BreathFirstSearch<LocationNode, LocationXY> = object :
+			BreathFirstSearch<LocationNode, LocationXY>() {
 		init {
 			name = "正向搜索"
+			onNewLevel = { level, nodeCount ->
+				if (nodeCount >
+						backwardSearch.searchingNodes.count() +
+						backwardSearch.searchedNodes.count()) {
+					println("$name 暂停搜索第 $level 层。")
+					yield()
+				}
+			}
 		}
 
 		override fun LocationNode.generateNext() = calcAdjacencyLocations(locationXY)
@@ -176,13 +185,29 @@ class PathFinder(
 				}
 
 		override fun LocationNode.checkDone(): Boolean {
-			TODO("Not yet implemented")
+			if (locationXY == matchPoint) {
+				return true
+			}
+			if (backwardSearch.searchingNodes.contains(this)) {
+				matchPoint = locationXY
+				return true
+			}
+			return false
 		}
 	}
 
-	private val backwardSearch = object : BreathFirstSearch<LocationNode, LocationXY>() {
+	private val backwardSearch: BreathFirstSearch<LocationNode, LocationXY> = object :
+			BreathFirstSearch<LocationNode, LocationXY>() {
 		init {
 			name = "反向搜索"
+			onNewLevel = { level, nodeCount ->
+				if (nodeCount >
+						forwardSearch.searchingNodes.count() +
+						forwardSearch.searchedNodes.count()) {
+					println("$name 暂停搜索第 $level 层。")
+					yield()
+				}
+			}
 		}
 
 		override fun LocationNode.generateNext() = calcAdjacencyLocations(locationXY)
@@ -195,9 +220,18 @@ class PathFinder(
 				}
 
 		override fun LocationNode.checkDone(): Boolean {
-			TODO("Not yet implemented")
+			if (locationXY == matchPoint) {
+				return true
+			}
+			if (forwardSearch.searchingNodes.contains(this)) {
+				matchPoint = locationXY
+				return true
+			}
+			return false
 		}
 	}
+
+	private var matchPoint: LocationXY? = null
 
 	fun search() = runBlocking {
 		val forwardSearchResult = async {
