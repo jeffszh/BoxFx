@@ -1,6 +1,7 @@
 package cn.jeff.game.boxfx
 
 import cn.jeff.game.boxfx.brain.PathFinder
+import cn.jeff.game.boxfx.event.MoveOrPushEvent
 import cn.jeff.game.boxfx.event.RoomSuccessEvent
 import cn.jeff.utils.ArrayXY
 import cn.jeff.utils.LocationXY
@@ -155,16 +156,14 @@ class Board : View() {
 			runAsync {
 				searchResult.forEach {
 					it as PathFinder.Direction
-					//Thread.sleep(500)
-					ui { _ ->
-						moveOrPush(it.dx, it.dy)
-					}
+					Thread.sleep(50)
+					fire(MoveOrPushEvent(it.dx, it.dy))
 				}
 			}
 		}
 	}
 
-	private fun moveOrPush(deltaX: Int, deltaY: Int) {
+	fun moveOrPush(deltaX: Int, deltaY: Int) {
 		// println("移动：$deltaX, $deltaY")
 		val location0 = manLocation
 		val location1 = location0.delta(deltaX, deltaY)

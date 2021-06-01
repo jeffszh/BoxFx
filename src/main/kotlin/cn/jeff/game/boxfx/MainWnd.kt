@@ -2,6 +2,7 @@ package cn.jeff.game.boxfx
 
 import cn.jeff.game.boxfx.data.RoomRecord
 import cn.jeff.game.boxfx.data.gameRecord
+import cn.jeff.game.boxfx.event.MoveOrPushEvent
 import cn.jeff.game.boxfx.event.RoomSuccessEvent
 import cn.jeff.game.boxfx.event.TimerEvent
 import cn.jeff.utils.Toast
@@ -25,9 +26,11 @@ class MainWnd : View("推箱子智能版") {
 		primaryStage.isResizable = true
 
 		val loader = FXMLLoader()
-		root = loader.load(javaClass.getResourceAsStream(
+		root = loader.load(
+			javaClass.getResourceAsStream(
 				"/cn/jeff/game/boxfx/MainWnd.fxml"
-		))
+			)
+		)
 		j = loader.getController()
 		j.k = this
 
@@ -41,6 +44,9 @@ class MainWnd : View("推箱子智能版") {
 		}
 		subscribe<TimerEvent> {
 			board.onTimer()
+		}
+		subscribe<MoveOrPushEvent> { e ->
+			board.moveOrPush(e.dx, e.dy)
 		}
 	}
 
@@ -57,20 +63,24 @@ class MainWnd : View("推箱子智能版") {
 		gameRecord.lastPlayedRoom = currentRoomNo.value
 		gameRecord.save()
 		bestStepCount.value = gameRecord.roomRecords[currentRoomNo.value]
-				?.bestStepCount?.toString()
+			?.bestStepCount?.toString()
 		bestStepByAI.value = gameRecord.roomRecords[currentRoomNo.value]
-				?.stepCountByAi?.toString()
+			?.stepCountByAi?.toString()
 		bindStatusLabel()
 	}
 
 	private fun bindStatusLabel() {
 		val stepCount = board.stepCount
 		val binding = stringBinding(currentRoomNo, stepCount, bestStepCount, bestStepByAI) {
-			"第${currentRoomNo.value}关  当前步数：${stepCount.value} ${bestStepCount.value?.let {
-				"以往最佳步数：$it"
-			} ?: ""} ${bestStepByAI.value?.let {
-				"AI最佳步数：$it"
-			} ?: ""}"
+			"第${currentRoomNo.value}关  当前步数：${stepCount.value} ${
+				bestStepCount.value?.let {
+					"以往最佳步数：$it"
+				} ?: ""
+			} ${
+				bestStepByAI.value?.let {
+					"AI最佳步数：$it"
+				} ?: ""
+			}"
 		}
 		j.statusLabel.bind(binding)
 	}
