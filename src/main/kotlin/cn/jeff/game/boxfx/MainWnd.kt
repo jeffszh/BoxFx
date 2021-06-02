@@ -143,6 +143,13 @@ class MainWnd : View("推箱子智能版") {
 		}
 	}
 
+	fun autoResolve() {
+		val aiWnd = AiWnd(currentRoomNo.value).openWindow()!!
+		currentStage?.let {
+			aiWnd.x = it.x + it.width
+		}
+	}
+
 	private fun onRoomSuccess(stepCount: Int) {
 		bestStepCount.value = stepCount.toString()
 		val roomRecord = gameRecord.roomRecords[currentRoomNo.value] ?: RoomRecord()

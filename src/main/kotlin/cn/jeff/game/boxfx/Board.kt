@@ -89,7 +89,7 @@ class Board : View() {
 	private val width get() = scene.width
 	private val height get() = scene.height
 	val stepCount = SimpleIntegerProperty(0)
-	private var isSuccess = false
+	var isSuccess = false
 
 	private fun internalSetScene(scene: Scene) {
 		root.clear()
@@ -142,6 +142,7 @@ class Board : View() {
 	}
 
 	private fun onCellClick(x: Int, y: Int) {
+		if (isSuccess) return
 		// Toast("点击：$x, $y").show()
 		val searchResult = PathFinder(width, height, cells, manLocation, LocationXY(x, y)).search()
 		if (searchResult.isEmpty()) {

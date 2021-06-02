@@ -23,4 +23,8 @@ public class MainWndJ {
 		k.playAgain();
 	}
 
+	public void autoResolve() {
+		k.autoResolve();
+	}
+
 }

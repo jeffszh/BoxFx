@@ -24,6 +24,7 @@
 				</tooltip>
 			</Button>
 			<Button focusTraversable="false" onAction="#playAgain" mnemonicParsing="false" text="重玩本关"/>
+			<Button focusTraversable="false" onAction="#autoResolve" mnemonicParsing="false" text="AI求解"/>
 			<padding>
 				<Insets bottom="10.0" left="10.0" right="10.0" top="10.0"/>
 			</padding>
