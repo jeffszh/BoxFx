@@ -40,12 +40,26 @@ class PathFinder(
 		DOWN(0, 1) {
 			override val inverseOperation get() = UP
 		},
+		DUMMY(0, 0) {
+			override val inverseOperation: Direction
+				get() {
+					error("内部出错1")
+				}
+
+			override fun invoke(p1: LocationXY): LocationXY {
+				error("内部出错2")
+			}
+		}
 		;
 
 		override fun invoke(p1: LocationXY) =
 			LocationXY(p1.x + dx, p1.y + dy)
 
 		abstract val inverseOperation: Direction
+
+		companion object {
+			val meaningfulValues = values().subtract(listOf(DUMMY))
+		}
 	}
 
 	operator fun LocationXY.plus(dir: Direction) =
@@ -54,9 +68,9 @@ class PathFinder(
 	private class LocationNode(
 		val locationXY: LocationXY,
 		distance: Int,
-		fromLink: (LocationXY) -> LocationXY,
+		fromLink: Direction,
 		backLink: () -> LocationNode
-	) : BfsNode<LocationNode, LocationXY>(distance, fromLink, backLink) {
+	) : BfsNode<LocationNode, LocationXY, Direction>(distance, fromLink, backLink) {
 
 		override fun hashCode(): Int {
 			// println("计算哈希。")
@@ -69,7 +83,7 @@ class PathFinder(
 
 	private fun calcAdjacencyLocations(
 		locationXY: LocationXY
-	) = Direction.values().associateWith {
+	) = Direction.meaningfulValues.associateWith {
 		locationXY + it
 	}.filter { (_, v) ->
 		v.x in 0 until width && v.y in 0 until height
@@ -77,8 +91,8 @@ class PathFinder(
 		cells[v].isPassable()
 	}
 
-	private val forwardSearch: BreathFirstSearch<LocationNode, LocationXY> = object :
-		BreathFirstSearch<LocationNode, LocationXY>() {
+	private val forwardSearch: BreathFirstSearch<LocationNode, LocationXY, Direction> = object :
+		BreathFirstSearch<LocationNode, LocationXY, Direction>() {
 		init {
 			name = "正向搜索"
 			onNewLevel = { level, nodeCount ->
@@ -111,8 +125,8 @@ class PathFinder(
 		}
 	}
 
-	private val backwardSearch: BreathFirstSearch<LocationNode, LocationXY> = object :
-		BreathFirstSearch<LocationNode, LocationXY>() {
+	private val backwardSearch: BreathFirstSearch<LocationNode, LocationXY, Direction> = object :
+		BreathFirstSearch<LocationNode, LocationXY, Direction>() {
 		init {
 			name = "反向搜索"
 			onNewLevel = { level, nodeCount ->
@@ -157,7 +171,7 @@ class PathFinder(
 			forwardSearch.search(
 				root = LocationNode(
 					startLocation, 0,
-					{ it }, dummyLink
+					Direction.DUMMY, dummyLink
 				)
 			)
 		}
@@ -165,17 +179,13 @@ class PathFinder(
 			backwardSearch.search(
 				root = LocationNode(
 					destLocation, 0,
-					{ it }, dummyLink
+					Direction.DUMMY, dummyLink
 				)
 			)
 		}
 		val result = awaitAll(forwardSearchResult, backwardSearchResult)
 		return@runBlocking result[0] + result[1].reversed().map {
-			if (it is Direction) {
-				it.inverseOperation
-			} else {
-				error("内部类型出错！")
-			}
+			it.inverseOperation
 		}
 	}
 

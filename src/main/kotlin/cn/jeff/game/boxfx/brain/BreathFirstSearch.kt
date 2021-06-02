@@ -5,7 +5,7 @@ package cn.jeff.game.boxfx.brain
  * 抽象类，实现普遍意义的广度优先搜索。
  * [P]必须重载判断相等的操作符。
  */
-abstract class BreathFirstSearch<N : BfsNode<N, P>, P> {
+abstract class BreathFirstSearch<N : BfsNode<N, P, L>, P, L : (P) -> P> {
 
 	var name = "BFS"
 	var onNewLevel: suspend (level: Int, nodeCount: Int) -> Unit = { _, _ -> }
@@ -17,7 +17,7 @@ abstract class BreathFirstSearch<N : BfsNode<N, P>, P> {
 	val searchedNodes = hashSetOf<N>()
 	val searchingNodes = hashSetOf<N>()
 
-	suspend fun search(root: N): List<(P) -> P> {
+	suspend fun search(root: N): List<L> {
 		searchingNodes.add(root)
 		return search(0)
 	}
@@ -26,7 +26,7 @@ abstract class BreathFirstSearch<N : BfsNode<N, P>, P> {
 	 * # 搜索一层
 	 * 为了方便实现双向搜索，使用逐层搜索的方式，因此跟通常的广度优先搜索算法略有不同。
 	 */
-	private tailrec suspend fun search(level: Int): List<(P) -> P> {
+	private tailrec suspend fun search(level: Int): List<L> {
 		println("$name 准备搜索第 $level 层。")
 		onNewLevel(level, searchedNodes.count() + searchingNodes.count())
 		println("$name 开始搜索第 $level 层。")
@@ -34,7 +34,7 @@ abstract class BreathFirstSearch<N : BfsNode<N, P>, P> {
 		searchingNodes.forEach {
 			if (it.checkDone()) {
 				// 如果成功，返回搜索路径。
-				val result = mutableListOf<(P) -> P>()
+				val result = mutableListOf<L>()
 				var node = it
 				while (node.distance > 0) {
 					result.add(node.fromLink)
