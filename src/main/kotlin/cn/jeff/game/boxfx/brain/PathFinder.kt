@@ -9,6 +9,16 @@ import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.yield
 
+/**
+ * # 路径寻找器
+ * 用于在棋盘中寻找移动路径。
+ *
+ * @property width 棋盘的宽度
+ * @property height 棋盘的高度
+ * @property cells 棋盘格
+ * @property startLocation 起点
+ * @property destLocation 终点
+ */
 class PathFinder(
 	private val width: Int,
 	private val height: Int,
@@ -137,6 +147,11 @@ class PathFinder(
 
 	private var matchPoint: LocationXY? = null
 
+	/**
+	 * # 寻找路径
+	 * 寻找从[startLocation]到[destLocation]的最短路径。
+	 * @return 若成功，返回移动方法的列表；若失败，返回空列表。
+	 */
 	fun search() = runBlocking {
 		val forwardSearchResult = async {
 			forwardSearch.search(
