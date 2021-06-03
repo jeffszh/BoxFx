@@ -26,9 +26,6 @@ class PathFinder(
 	private val destLocation: LocationXY
 ) {
 
-	operator fun LocationXY.plus(dir: Direction) =
-		dir(this)
-
 	private class LocationNode(
 		val locationXY: LocationXY,
 		distance: Int,
