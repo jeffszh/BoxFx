@@ -37,8 +37,8 @@ abstract class BreathFirstSearch<N : BfsNode<N, P, L>, P, L : (P) -> P> {
 				val result = mutableListOf<L>()
 				var node = it
 				while (node.distance > 0) {
-					result.add(node.fromLink)
-					node = node.backLink()
+					result.add(node.fromLink!!)
+					node = node.fromNode!!
 				}
 				return result.reversed()
 			}

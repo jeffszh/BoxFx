@@ -7,5 +7,6 @@ import cn.jeff.utils.LocationXY
  * 包括推和拉两种。
  */
 class BoxOperation(
-	val manLocation: LocationXY
+	val manLocation: LocationXY,
+	val pushDirection: Direction,
 )

@@ -156,7 +156,6 @@ class Board : View() {
 			println("共 ${searchResult.count()} 步。")
 			runAsync {
 				searchResult.forEach {
-					it as PathFinder.Direction
 					Thread.sleep(50)
 					fire(MoveOrPushEvent(it.dx, it.dy))
 				}

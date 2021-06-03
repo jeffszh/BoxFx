@@ -15,16 +15,6 @@ enum class Direction(val dx: Int, val dy: Int) : (LocationXY) -> LocationXY {
 	DOWN(0, 1) {
 		override val inverseOperation get() = UP
 	},
-	DUMMY(0, 0) {
-		override val inverseOperation: Direction
-			get() {
-				error("内部出错1")
-			}
-
-		override fun invoke(p1: LocationXY): LocationXY {
-			error("内部出错2")
-		}
-	}
 	;
 
 	override fun invoke(p1: LocationXY) =
@@ -32,7 +22,4 @@ enum class Direction(val dx: Int, val dy: Int) : (LocationXY) -> LocationXY {
 
 	abstract val inverseOperation: Direction
 
-	companion object {
-		val meaningfulValues = values().subtract(listOf(DUMMY))
-	}
 }

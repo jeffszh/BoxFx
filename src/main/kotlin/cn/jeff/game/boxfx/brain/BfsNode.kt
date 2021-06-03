@@ -8,12 +8,6 @@ package cn.jeff.game.boxfx.brain
  */
 abstract class BfsNode<N : BfsNode<N, P, L>, P, L : (P) -> P>(
 	val distance: Int,
-	val fromLink: L,
-	val backLink: () -> N
-) {
-	companion object {
-		val dummyLink = {
-			error("無效link！")
-		}
-	}
-}
+	val fromLink: L?,
+	val fromNode: N?,
+)

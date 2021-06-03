@@ -1,7 +1,6 @@
 package cn.jeff.game.boxfx.brain
 
 import cn.jeff.game.boxfx.Cell
-import cn.jeff.game.boxfx.brain.BfsNode.Companion.dummyLink
 import cn.jeff.utils.ArrayXY
 import cn.jeff.utils.LocationXY
 import kotlinx.coroutines.async
@@ -33,9 +32,9 @@ class PathFinder(
 	private class LocationNode(
 		val locationXY: LocationXY,
 		distance: Int,
-		fromLink: Direction,
-		backLink: () -> LocationNode
-	) : BfsNode<LocationNode, LocationXY, Direction>(distance, fromLink, backLink) {
+		fromLink: Direction?,
+		fromNode: LocationNode?
+	) : BfsNode<LocationNode, LocationXY, Direction>(distance, fromLink, fromNode) {
 
 		override fun hashCode(): Int {
 			// println("计算哈希。")
@@ -48,7 +47,7 @@ class PathFinder(
 
 	private fun calcAdjacencyLocations(
 		locationXY: LocationXY
-	) = Direction.meaningfulValues.associateWith {
+	) = Direction.values().associateWith {
 		locationXY + it
 	}.filter { (_, v) ->
 		v.x in 0 until width && v.y in 0 until height
@@ -73,9 +72,7 @@ class PathFinder(
 
 		override fun LocationNode.generateNext() = calcAdjacencyLocations(locationXY)
 			.map { (direction, newLocation) ->
-				LocationNode(newLocation, distance + 1, direction) {
-					this
-				}
+				LocationNode(newLocation, distance + 1, direction, this)
 			}
 
 		override fun LocationNode.checkDone(): Boolean {
@@ -107,9 +104,7 @@ class PathFinder(
 
 		override fun LocationNode.generateNext() = calcAdjacencyLocations(locationXY)
 			.map { (direction, newLocation) ->
-				LocationNode(newLocation, distance + 1, direction) {
-					this
-				}
+				LocationNode(newLocation, distance + 1, direction, this)
 			}
 
 		override fun LocationNode.checkDone(): Boolean {
@@ -136,7 +131,7 @@ class PathFinder(
 			forwardSearch.search(
 				root = LocationNode(
 					startLocation, 0,
-					Direction.DUMMY, dummyLink
+					null, null
 				)
 			)
 		}
@@ -144,7 +139,7 @@ class PathFinder(
 			backwardSearch.search(
 				root = LocationNode(
 					destLocation, 0,
-					Direction.DUMMY, dummyLink
+					null, null
 				)
 			)
 		}
