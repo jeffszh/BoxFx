@@ -26,12 +26,12 @@ class PathFinder(
 	private val destLocation: LocationXY
 ) {
 
-	private class LocationNode(
+	class LocationNode(
 		val locationXY: LocationXY,
 		distance: Int,
-		fromLink: Direction?,
+		fromLink: NodeLink?,
 		fromNode: LocationNode?
-	) : BfsNode<LocationNode, LocationXY, Direction>(distance, fromLink, fromNode) {
+	) : BfsNode<LocationNode, NodeLink>(distance, fromLink, fromNode) {
 
 		override fun hashCode(): Int {
 			// println("计算哈希。")
@@ -52,8 +52,15 @@ class PathFinder(
 		cells[v].isPassable()
 	}
 
-	private val forwardSearch: BreathFirstSearch<LocationNode, LocationXY, Direction> = object :
-		BreathFirstSearch<LocationNode, LocationXY, Direction>() {
+	class NodeLink(val direction: Direction) : (LocationNode) -> LocationNode {
+		override fun invoke(p1: LocationNode) = LocationNode(
+			p1.locationXY + direction, p1.distance + 1,
+			this, p1
+		)
+	}
+
+	private val forwardSearch: BreathFirstSearch<LocationNode, NodeLink> = object :
+		BreathFirstSearch<LocationNode, NodeLink>() {
 		init {
 			name = "正向搜索"
 			onNewLevel = { level, nodeCount ->
@@ -69,23 +76,26 @@ class PathFinder(
 
 		override fun LocationNode.generateNext() = calcAdjacencyLocations(locationXY)
 			.map { (direction, newLocation) ->
-				LocationNode(newLocation, distance + 1, direction, this)
+				LocationNode(
+					newLocation, distance + 1,
+					NodeLink(direction), this
+				)
 			}
 
 		override fun LocationNode.checkDone(): Boolean {
-			if (locationXY == matchPoint) {
+			if (this == matchPoint) {
 				return true
 			}
 			if (backwardSearch.searchingNodes.contains(this)) {
-				matchPoint = locationXY
+				matchPoint = this
 				return true
 			}
 			return false
 		}
 	}
 
-	private val backwardSearch: BreathFirstSearch<LocationNode, LocationXY, Direction> = object :
-		BreathFirstSearch<LocationNode, LocationXY, Direction>() {
+	private val backwardSearch: BreathFirstSearch<LocationNode, NodeLink> = object :
+		BreathFirstSearch<LocationNode, NodeLink>() {
 		init {
 			name = "反向搜索"
 			onNewLevel = { level, nodeCount ->
@@ -101,22 +111,25 @@ class PathFinder(
 
 		override fun LocationNode.generateNext() = calcAdjacencyLocations(locationXY)
 			.map { (direction, newLocation) ->
-				LocationNode(newLocation, distance + 1, direction, this)
+				LocationNode(
+					newLocation, distance + 1,
+					NodeLink(direction), this
+				)
 			}
 
 		override fun LocationNode.checkDone(): Boolean {
-			if (locationXY == matchPoint) {
+			if (this == matchPoint) {
 				return true
 			}
 			if (forwardSearch.searchingNodes.contains(this)) {
-				matchPoint = locationXY
+				matchPoint = this
 				return true
 			}
 			return false
 		}
 	}
 
-	private var matchPoint: LocationXY? = null
+	private var matchPoint: LocationNode? = null
 
 	/**
 	 * # 寻找路径
@@ -142,7 +155,7 @@ class PathFinder(
 		}
 		val result = awaitAll(forwardSearchResult, backwardSearchResult)
 		return@runBlocking result[0] + result[1].reversed().map {
-			it.inverseOperation
+			NodeLink(it.direction.inverseOperation)
 		}
 	}
 

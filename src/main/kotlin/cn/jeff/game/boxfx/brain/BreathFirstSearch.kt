@@ -3,9 +3,9 @@ package cn.jeff.game.boxfx.brain
 /**
  * # 广度优先搜索
  * 抽象类，实现普遍意义的广度优先搜索。
- * [P]必须重载判断相等的操作符。
+ * [N]必须重载判断相等的操作符。
  */
-abstract class BreathFirstSearch<N : BfsNode<N, P, L>, P, L : (P) -> P> {
+abstract class BreathFirstSearch<N : BfsNode<N, L>, L : (N) -> N> {
 
 	var name = "BFS"
 	var onNewLevel: suspend (level: Int, nodeCount: Int) -> Unit = { _, _ -> }

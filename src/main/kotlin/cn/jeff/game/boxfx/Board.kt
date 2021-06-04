@@ -143,6 +143,9 @@ class Board : View() {
 
 	private fun onCellClick(x: Int, y: Int) {
 		if (isSuccess) return
+		if (manLocation.x == x && manLocation.y == y) {
+			return
+		}
 		// Toast("点击：$x, $y").show()
 		val searchResult = PathFinder(width, height, cells, manLocation, LocationXY(x, y)).search()
 		if (searchResult.isEmpty()) {
@@ -150,14 +153,14 @@ class Board : View() {
 		} else {
 			var location = manLocation
 			searchResult.forEach {
-				location = it(location)
+				location += it.direction
 				println(location)
 			}
 			println("共 ${searchResult.count()} 步。")
 			runAsync {
 				searchResult.forEach {
 					Thread.sleep(50)
-					fire(MoveOrPushEvent(it.dx, it.dy))
+					fire(MoveOrPushEvent(it.direction.dx, it.direction.dy))
 				}
 			}
 		}
