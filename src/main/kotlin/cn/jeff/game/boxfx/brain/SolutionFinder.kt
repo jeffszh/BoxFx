@@ -184,4 +184,76 @@ class SolutionFinder(
 		println("-----------------")
 	}
 
+	private fun EvalCells.push(push: BoxOperation.Push) {
+		val manLocation = push.manLocation
+		val boxLocation = manLocation + push.pushDirection
+		val destLocation = boxLocation + push.pushDirection
+		this[manLocation] = Cell.SPACE
+		this[boxLocation] = Cell.MAN
+		this[destLocation] = Cell.BOX
+	}
+
+	private fun interface CanReappearCells {
+		fun reappearCells(): EvalCells
+	}
+
+	private class ForwardLink(val push: BoxOperation.Push) : (ForwardNode) -> ForwardNode {
+		override fun invoke(p1: ForwardNode): ForwardNode {
+			TODO("Not yet implemented")
+		}
+	}
+
+	private inner class ForwardNode(distance: Int, fromLink: ForwardLink?, fromNode: ForwardNode?) :
+		BfsNode<ForwardNode, ForwardLink>(distance, fromLink, fromNode),CanReappearCells {
+
+		/**
+		 * # 重现Cells
+		 * 根据推的路径，重现Cells的状态。
+		 * @return 本节点对应的Cells。
+		 */
+		override fun reappearCells(): EvalCells {
+			val fromLinkList = mutableListOf<ForwardLink>()
+			var n1 = this
+			while (n1.fromNode != null) {
+				fromLinkList.add(n1.fromLink!!)
+				n1 = n1.fromNode!!
+			}
+			val pushList = fromLinkList.map {
+				it.push
+			}.reversed()
+			return startingCells.clone().also { evc ->
+				pushList.forEach { push ->
+					evc.push(push)
+				}
+				pushList.lastOrNull()?.let {
+					evc.normalize()
+					evc.expandMan(it.manLocation + it.pushDirection)
+				}
+			}
+		}
+
+		private val hashCode by lazy {
+			reappearCells().toPackedString().hashCode()
+		}
+
+		override fun hashCode() = hashCode
+		override fun equals(other: Any?) =
+			other is CanReappearCells &&
+					reappearCells().toPackedString() ==
+					other.reappearCells().toPackedString()
+
+	}
+
+	private class ForwardSearch : BreathFirstSearch<ForwardNode, ForwardLink>() {
+		override fun ForwardNode.generateNext(): List<ForwardNode> {
+			TODO("Not yet implemented")
+		}
+
+		override fun ForwardNode.checkDone(): Boolean {
+			TODO("Not yet implemented")
+		}
+	}
+
+	private val forwardSearch = ForwardSearch()
+
 }
