@@ -184,7 +184,7 @@ class SolutionFinder(
 		println("-----------------")
 	}
 
-	private fun EvalCells.push(push: BoxOperation.Push) {
+	private fun EvalCells.performPush(push: BoxOperation.Push) {
 		val manLocation = push.manLocation
 		val boxLocation = manLocation + push.pushDirection
 		val destLocation = boxLocation + push.pushDirection
@@ -193,18 +193,37 @@ class SolutionFinder(
 		this[destLocation] = Cell.BOX
 	}
 
+	private fun EvalCells.performPull(pull: BoxOperation.Pull) {
+		val manLocation = pull.manLocation
+		val boxLocation = manLocation - pull.pullDirection
+		val newManLocation = manLocation + pull.pullDirection
+		this[boxLocation] = Cell.SPACE
+		this[manLocation] = Cell.BOX
+		this[newManLocation] = Cell.MAN
+	}
+
 	private fun interface CanReappearCells {
 		fun reappearCells(): EvalCells
+		fun calcHash() = reappearCells().toPackedString().hashCode()
+		fun cellsEquals(other: Any?) =
+			other is CanReappearCells &&
+					reappearCells().toPackedString() ==
+					other.reappearCells().toPackedString()
 	}
 
-	private class ForwardLink(val push: BoxOperation.Push) : (ForwardNode) -> ForwardNode {
-		override fun invoke(p1: ForwardNode): ForwardNode {
-			TODO("Not yet implemented")
-		}
+	private inner class ForwardLink(val push: BoxOperation.Push) : (ForwardNode) -> ForwardNode {
+		override fun invoke(p1: ForwardNode) = ForwardNode(
+			p1.distance + 1,
+			this,
+			p1
+		)
 	}
 
-	private inner class ForwardNode(distance: Int, fromLink: ForwardLink?, fromNode: ForwardNode?) :
-		BfsNode<ForwardNode, ForwardLink>(distance, fromLink, fromNode),CanReappearCells {
+	private inner class ForwardNode(
+		distance: Int,
+		fromLink: ForwardLink?,
+		fromNode: ForwardNode?
+	) : BfsNode<ForwardNode, ForwardLink>(distance, fromLink, fromNode), CanReappearCells {
 
 		/**
 		 * # 重现Cells
@@ -223,7 +242,7 @@ class SolutionFinder(
 			}.reversed()
 			return startingCells.clone().also { evc ->
 				pushList.forEach { push ->
-					evc.push(push)
+					evc.performPush(push)
 				}
 				pushList.lastOrNull()?.let {
 					evc.normalize()
@@ -232,20 +251,15 @@ class SolutionFinder(
 			}
 		}
 
-		private val hashCode by lazy {
-			reappearCells().toPackedString().hashCode()
-		}
-
+		private val hashCode by lazy { calcHash() }
 		override fun hashCode() = hashCode
-		override fun equals(other: Any?) =
-			other is CanReappearCells &&
-					reappearCells().toPackedString() ==
-					other.reappearCells().toPackedString()
+		override fun equals(other: Any?) = cellsEquals(other)
 
 	}
 
 	private class ForwardSearch : BreathFirstSearch<ForwardNode, ForwardLink>() {
 		override fun ForwardNode.generateNext(): List<ForwardNode> {
+			val evc = reappearCells()
 			TODO("Not yet implemented")
 		}
 
@@ -255,5 +269,64 @@ class SolutionFinder(
 	}
 
 	private val forwardSearch = ForwardSearch()
+
+	private inner class BackwardLink(val pull: BoxOperation.Pull) : (BackwardNode) -> BackwardNode {
+		override fun invoke(p1: BackwardNode) = BackwardNode(
+			p1.distance + 1,
+			this,
+			p1
+		)
+	}
+
+	private open inner class BackwardNode(
+		distance: Int,
+		fromLink: BackwardLink?,
+		fromNode: BackwardNode?
+	) : BfsNode<BackwardNode, BackwardLink>(distance, fromLink, fromNode), CanReappearCells {
+
+		override fun reappearCells(): EvalCells {
+			val fromLinkList = mutableListOf<BackwardLink>()
+			var n1 = this
+			while (n1.fromNode != null) {
+				fromLinkList.add(n1.fromLink!!)
+				n1 = n1.fromNode!!
+			}
+			val pullList = fromLinkList.map {
+				it.pull
+			}.reversed()
+			// 运行到这里，n1一定是其中一个根节点了。
+			return n1.reappearCells().clone().also { evc ->
+				pullList.forEach { pull ->
+					evc.performPull(pull)
+				}
+				pullList.lastOrNull()?.let {
+					evc.normalize()
+					evc.expandMan(it.manLocation + it.pullDirection)
+				}
+			}
+		}
+
+		private val hashCode by lazy { calcHash() }
+		override fun hashCode() = hashCode
+		override fun equals(other: Any?) = cellsEquals(other)
+
+	}
+
+	private inner class BackwardRootNode(val cells: EvalCells) :
+		BackwardNode(0, null, null) {
+		override fun reappearCells() = cells
+	}
+
+	private class BackwardSearch : BreathFirstSearch<BackwardNode, BackwardLink>() {
+		override fun BackwardNode.generateNext(): List<BackwardNode> {
+			TODO("Not yet implemented")
+		}
+
+		override fun BackwardNode.checkDone(): Boolean {
+			TODO("Not yet implemented")
+		}
+	}
+
+	private val backwardSearch = BackwardSearch()
 
 }

@@ -17,8 +17,8 @@ abstract class BreathFirstSearch<N : BfsNode<N, L>, L : (N) -> N> {
 	val searchedNodes = hashSetOf<N>()
 	val searchingNodes = hashSetOf<N>()
 
-	suspend fun search(root: N): List<L> {
-		searchingNodes.add(root)
+	suspend fun search(vararg root: N): List<L> {
+		searchingNodes.addAll(root)
 		return search(0)
 	}
 

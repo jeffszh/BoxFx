@@ -139,7 +139,7 @@ class PathFinder(
 	fun search() = runBlocking {
 		val forwardSearchResult = async {
 			forwardSearch.search(
-				root = LocationNode(
+				LocationNode(
 					startLocation, 0,
 					null, null
 				)
@@ -147,7 +147,7 @@ class PathFinder(
 		}
 		val backwardSearchResult = async {
 			backwardSearch.search(
-				root = LocationNode(
+				LocationNode(
 					destLocation, 0,
 					null, null
 				)
