@@ -38,7 +38,7 @@ class SolutionFinder(
 		}.filterNotNull()
 
 		// 找所有可能的结局状态，过程中暂时将搜过的状态的MAN变成MAN_DEST。
-		endingCells = allSpaceLocation.mapNotNull {
+		val candidateEndingCells = allSpaceLocation.mapNotNull {
 			if (normalizedEndingCells[it] == Cell.SPACE) {
 				normalizedEndingCells.expandMan(it)
 				val oneOfEnding = normalizedEndingCells.clone()
@@ -51,16 +51,17 @@ class SolutionFinder(
 			} else {
 				null
 			}
-		}.toSet()
+		}
 
 		// 找完了之后，把过程中暂时变成MAN_DEST的位置恢复为SPACE。
-		endingCells.forEach {
+		candidateEndingCells.forEach {
 			it.forAllCells { location, evc ->
 				if (evc[location] == Cell.MAN_DEST) {
 					evc[location] = Cell.SPACE
 				}
 			}
 		}
+		endingCells = candidateEndingCells.toSet()
 	}
 
 	/**
@@ -102,6 +103,7 @@ class SolutionFinder(
 	 */
 	private fun EvalCells.expandMan(manLocation: LocationXY) {
 		if (get(manLocation) == Cell.SPACE) {
+			set(manLocation, Cell.MAN)
 			Direction.values().forEach {
 				// 简单起见，直接用非尾递归的深度搜索。
 				expandMan(manLocation + it)
@@ -144,6 +146,42 @@ class SolutionFinder(
 				}
 			}
 
+		fun toPackedString() = forAllCells { location, evc ->
+			evc[location].toChar()
+		}.toCharArray().concatToString()
+
+		override fun toString() =
+			toPackedString().let { packedString ->
+				(0 until height).map {
+					packedString.substring(it * width, it * width + width)
+				}
+			}.joinToString("\n")
+
+		override fun hashCode() =
+			toPackedString().hashCode()
+
+		override fun equals(other: Any?) = other is EvalCells &&
+				toPackedString() == other.toPackedString()
+
+		private companion object {
+			private const val cellChars = "-+ .#@^"
+			private fun Cell.toChar() = cellChars[ordinal]
+			// private fun Char.toCell() = Cell.fromInt(cellChars.indexOf(this))
+		}
+	}
+
+	fun test() {
+		println("-----------------")
+		println(startingCells)
+		println("-----------------")
+		destLocations.forEach {
+			println(it)
+		}
+		println("-----------------")
+		endingCells.forEach {
+			println(it)
+		}
+		println("-----------------")
 	}
 
 }

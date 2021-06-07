@@ -67,10 +67,11 @@ class Board : View() {
 		}
 	}
 
-	private var manLocation = LocationXY(0, 0)
+	var manLocation = LocationXY(0, 0)
+		private set
 	private var internalCellList =
 		listOf(listOf<ObjectProperty<Cell>>())
-	private val cells = object : ArrayXY<Cell> {
+	val cells = object : ArrayXY<Cell> {
 		override fun get(locationXY: LocationXY): Cell =
 			internalCellList[locationXY.y][locationXY.x].value
 

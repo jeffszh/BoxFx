@@ -1,5 +1,6 @@
 package cn.jeff.game.boxfx
 
+import cn.jeff.game.boxfx.brain.SolutionFinder
 import javafx.fxml.FXMLLoader
 import javafx.scene.layout.BorderPane
 import tornadofx.*
@@ -31,6 +32,13 @@ class AiWnd(roomNo: Int) : View("AI自动求解 - 第 $roomNo 关") {
 	}
 
 	fun abort() {
+	}
+
+	fun testIt() {
+		SolutionFinder(
+			board.scene.width, board.scene.height,
+			board.cells, board.manLocation
+		).test()
 	}
 
 }

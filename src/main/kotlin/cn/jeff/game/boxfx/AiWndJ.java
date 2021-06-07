@@ -1,5 +1,6 @@
 package cn.jeff.game.boxfx;
 
+import javafx.event.ActionEvent;
 import javafx.scene.control.Label;
 
 public class AiWndJ {
@@ -11,6 +12,10 @@ public class AiWndJ {
 
 	public void abort() {
 		k.abort();
+	}
+
+	public void testIt() {
+		k.testIt();
 	}
 
 }
