@@ -2,7 +2,6 @@ package cn.jeff.game.boxfx
 
 import cn.jeff.game.boxfx.data.RoomRecord
 import cn.jeff.game.boxfx.data.gameRecord
-import cn.jeff.game.boxfx.event.MoveOrPushEvent
 import cn.jeff.game.boxfx.event.RoomSuccessEvent
 import cn.jeff.game.boxfx.event.TimerEvent
 import cn.jeff.utils.Toast
@@ -44,9 +43,6 @@ class MainWnd : View("推箱子智能版") {
 		}
 		subscribe<TimerEvent> {
 			board.onTimer()
-		}
-		subscribe<MoveOrPushEvent> { e ->
-			board.moveOrPush(e.dx, e.dy)
 		}
 	}
 

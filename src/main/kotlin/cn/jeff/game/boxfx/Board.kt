@@ -1,12 +1,12 @@
 package cn.jeff.game.boxfx
 
 import cn.jeff.game.boxfx.brain.PathFinder
-import cn.jeff.game.boxfx.event.MoveOrPushEvent
 import cn.jeff.game.boxfx.event.RoomSuccessEvent
 import cn.jeff.utils.ArrayXY
 import cn.jeff.utils.LocationXY
 import cn.jeff.utils.Toast
 import javafx.beans.property.ObjectProperty
+import javafx.beans.property.SimpleBooleanProperty
 import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.property.SimpleObjectProperty
 import javafx.event.EventHandler
@@ -90,7 +90,10 @@ class Board : View() {
 	private val width get() = scene.width
 	private val height get() = scene.height
 	val stepCount = SimpleIntegerProperty(0)
-	var isSuccess = false
+	private var isSuccess = false
+	var isInAiWnd = false
+	val isBusyProperty = SimpleBooleanProperty(false)
+	private var isBusy by isBusyProperty
 
 	private fun internalSetScene(scene: Scene) {
 		root.clear()
@@ -130,6 +133,8 @@ class Board : View() {
 
 	private fun processKey(k: KeyEvent) {
 		// println(k)
+		if (isInAiWnd) return
+		if (isBusy) return
 		if (isSuccess) return
 		when (k.code) {
 			KeyCode.UP -> moveOrPush(0, -1)
@@ -143,14 +148,22 @@ class Board : View() {
 	}
 
 	private fun onCellClick(x: Int, y: Int) {
+		if (isInAiWnd) return
+		if (isBusy) return
 		if (isSuccess) return
 		if (manLocation.x == x && manLocation.y == y) {
 			return
 		}
 		// Toast("点击：$x, $y").show()
+		manMoveTo(x, y)
+	}
+
+	fun manMoveTo(x: Int, y: Int) {
 		val searchResult = PathFinder(width, height, cells, manLocation, LocationXY(x, y)).search()
 		if (searchResult.isEmpty()) {
-			Toast("去不了那里！").show()
+			if (!isInAiWnd) {
+				Toast("去不了那里！").show()
+			}
 		} else {
 			var location = manLocation
 			searchResult.forEach {
@@ -158,11 +171,16 @@ class Board : View() {
 				println(location)
 			}
 			println("共 ${searchResult.count()} 步。")
+			isBusy = true
 			runAsync {
 				searchResult.forEach {
 					Thread.sleep(50)
-					fire(MoveOrPushEvent(it.direction.dx, it.direction.dy))
+					runLater {
+						moveOrPush(it.direction.dx, it.direction.dy)
+					}
 				}
+				Thread.sleep(50)
+				runLater { isBusy = false }
 			}
 		}
 	}
@@ -212,6 +230,7 @@ class Board : View() {
 	 * 检查本关是否已成功。
 	 */
 	private fun checkSuccess() {
+		if (isInAiWnd) return
 		val unresolvedBoxes = internalCellList.sumBy {
 			it.count { cell ->
 				cell.value == Cell.BOX

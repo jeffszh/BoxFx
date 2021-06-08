@@ -1,15 +1,21 @@
 package cn.jeff.game.boxfx
 
 import cn.jeff.game.boxfx.brain.SolutionFinder
+import javafx.beans.property.ListProperty
+import javafx.beans.property.SimpleIntegerProperty
+import javafx.beans.property.SimpleListProperty
 import javafx.fxml.FXMLLoader
 import javafx.scene.layout.BorderPane
 import tornadofx.*
 
-class AiWnd(roomNo: Int) : View("AI自动求解 - 第 $roomNo 关") {
+class AiWnd(private val roomNo: Int) : View("AI自动求解 - 第 $roomNo 关") {
 
 	override val root: BorderPane
 	private val j: AiWndJ
 	private val board: Board
+	private val aiResult: ListProperty<SolutionFinder.EvcLink> = SimpleListProperty()
+	private val aiSuccess = aiResult.isNotNull
+	private val demoStep = SimpleIntegerProperty(0)
 
 	init {
 		primaryStage.isResizable = true
@@ -28,7 +34,20 @@ class AiWnd(roomNo: Int) : View("AI自动求解 - 第 $roomNo 关") {
 
 		val room = RoomManager.rooms[roomNo]!!
 		board.scene = Scene(room)
-		board.isSuccess = true
+		board.isInAiWnd = true
+
+		val demoDisabled = aiSuccess.not().or(board.isBusyProperty)
+		j.btnReset.disableProperty().bind(demoDisabled)
+		j.btnNext.disableProperty().bind(
+			demoDisabled.or(
+				demoStep.greaterThanOrEqualTo(
+					aiResult.sizeProperty()
+				)
+			)
+		)
+		j.stepLabel.textProperty().bind(demoStep.stringBinding {
+			"第${it}步"
+		})
 	}
 
 	fun abort() {
@@ -57,7 +76,25 @@ class AiWnd(roomNo: Int) : View("AI自动求解 - 第 $roomNo 关") {
 			println(searchResult)
 			println(searchResult.count())
 			j.label3.text = "求解完成！最佳解法需${searchResult.count()}步。"
+			aiResult.value = searchResult.observable()
+			demoStep.value = 0
 		}
+	}
+
+	fun demoReset() {
+		val room = RoomManager.rooms[roomNo]!!
+		board.scene = Scene(room)
+		demoStep.value = 0
+	}
+
+	fun demoNext() {
+		val push = aiResult[demoStep.value].pushOrPull
+		board.manMoveTo(push.manLocation.x, push.manLocation.y)
+		board.isBusyProperty.awaitUntil {
+			!it
+		}
+		board.moveOrPush(push.direction.dx, push.direction.dy)
+		demoStep.value++
 	}
 
 	fun testIt() {
