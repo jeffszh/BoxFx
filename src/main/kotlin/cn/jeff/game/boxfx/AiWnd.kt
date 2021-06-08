@@ -34,6 +34,16 @@ class AiWnd(roomNo: Int) : View("AI自动求解 - 第 $roomNo 关") {
 	fun abort() {
 	}
 
+	override fun onDock() {
+		super.onDock()
+		val searchResult = SolutionFinder(
+			board.scene.width, board.scene.height,
+			board.cells, board.manLocation
+		).search()
+		println(searchResult)
+		println(searchResult.count())
+	}
+
 	fun testIt() {
 		SolutionFinder(
 			board.scene.width, board.scene.height,

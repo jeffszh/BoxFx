@@ -3,6 +3,10 @@ package cn.jeff.game.boxfx.brain
 import cn.jeff.game.boxfx.Cell
 import cn.jeff.utils.ArrayXY
 import cn.jeff.utils.LocationXY
+import kotlinx.coroutines.async
+import kotlinx.coroutines.awaitAll
+import kotlinx.coroutines.runBlocking
+import kotlinx.coroutines.yield
 
 class SolutionFinder(
 	width: Int,
@@ -127,7 +131,7 @@ class SolutionFinder(
 		println("-----------------")
 	}
 
-	private class EvcLink(val pushOrPull: BoxOperation) : (EvcNode) -> EvcNode {
+	class EvcLink(val pushOrPull: BoxOperation) : (EvcNode) -> EvcNode {
 		override fun invoke(p1: EvcNode) = EvcNode(
 			p1.distance + 1,
 			this,
@@ -135,7 +139,7 @@ class SolutionFinder(
 		)
 	}
 
-	private open class EvcNode(
+	open class EvcNode(
 		distance: Int,
 		fromLink: EvcLink?,
 		fromNode: EvcNode?
@@ -210,6 +214,18 @@ class SolutionFinder(
 			return false
 		}
 
+		init {
+			name = "推 --- "
+			onNewLevel = { level, nodeCount ->
+				if (nodeCount >
+					backwardSearch.searchingNodes.count() +
+					backwardSearch.searchedNodes.count()
+				) {
+					println("$name 暂停搜索第 $level 层。")
+					yield()
+				}
+			}
+		}
 	}
 
 	private val forwardSearch = ForwardSearch()
@@ -227,16 +243,79 @@ class SolutionFinder(
 
 	private inner class BackwardSearch : BreathFirstSearch<EvcNode, EvcLink>() {
 		override fun EvcNode.generateNext(): List<EvcNode> {
-			TODO("Not yet implemented")
+			val evc = reappearCells()
+			// 找所有箱子
+			val boxLocationList = evc.forAllCells { location, evc1 ->
+				if (evc1[location].isBox()) {
+					location
+				} else {
+					null
+				}
+			}.filterNotNull()
+			// 然后找旁边有MAN的，并且拉的方向可以通过的，生成拉列表。
+			val pullList = boxLocationList.flatMap { boxLocation ->
+				Direction.values().mapNotNull { direction ->
+					if (evc[boxLocation + direction] == Cell.MAN &&
+						evc[boxLocation + direction + direction].isPassable()
+					) {
+						BoxOperation.Pull(boxLocation + direction, direction)
+					} else {
+						null
+					}
+				}
+			}
+			// 根据拉列表生成下级节点
+			return pullList.map { pull ->
+				EvcNode(distance + 1, EvcLink(pull), this)
+			}
 		}
 
 		override fun EvcNode.checkDone(): Boolean {
-			TODO("Not yet implemented")
+			if (this == matchPoint) {
+				return true
+			}
+			if (this in forwardSearch.searchingNodes) {
+				matchPoint = this
+				return true
+			}
+			return false
+		}
+
+		init {
+			name = "拉 --- "
+			onNewLevel = { level, nodeCount ->
+				if (nodeCount >
+					forwardSearch.searchingNodes.count() +
+					forwardSearch.searchedNodes.count()
+				) {
+					println("$name 暂停搜索第 $level 层。")
+					yield()
+				}
+			}
 		}
 	}
 
 	private val backwardSearch = BackwardSearch()
 
 	private var matchPoint: EvcNode? = null
+
+	fun search() = runBlocking {
+		val forwardSearchResult = async {
+			forwardSearch.search(
+				RootNode(startingCells)
+			)
+		}
+		val backwardSearchResult = async {
+			backwardSearch.search(
+				* endingCells.map {
+					RootNode(it)
+				}.toTypedArray()
+			)
+		}
+		val result = awaitAll(forwardSearchResult, backwardSearchResult)
+		return@runBlocking result[0] + result[1].reversed().map {
+			EvcLink((it.pushOrPull as BoxOperation.Pull).inverseOperation())
+		}
+	}
 
 }
