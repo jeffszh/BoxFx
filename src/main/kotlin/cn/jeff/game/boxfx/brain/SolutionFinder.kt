@@ -257,15 +257,46 @@ class SolutionFinder(
 
 	}
 
-	private class ForwardSearch : BreathFirstSearch<ForwardNode, ForwardLink>() {
+	private inner class ForwardSearch : BreathFirstSearch<ForwardNode, ForwardLink>() {
 		override fun ForwardNode.generateNext(): List<ForwardNode> {
 			val evc = reappearCells()
-			TODO("Not yet implemented")
+			// 找所有箱子
+			val boxLocationList = evc.forAllCells { location, evc1 ->
+				if (evc1[location].isBox()) {
+					location
+				} else {
+					null
+				}
+			}.filterNotNull()
+			// 然后找旁边有MAN的，并且推的方向可以通过的，生成推列表。
+			val pushList = boxLocationList.flatMap { boxLocation ->
+				Direction.values().mapNotNull { direction ->
+					if (evc[boxLocation - direction] == Cell.MAN &&
+						evc[boxLocation + direction].isPassable()
+					) {
+						BoxOperation.Push(boxLocation - direction, direction)
+					} else {
+						null
+					}
+				}
+			}
+			// 根据推列表生成下级节点
+			return pushList.map { push ->
+				ForwardNode(distance + 1, ForwardLink(push), this)
+			}
 		}
 
 		override fun ForwardNode.checkDone(): Boolean {
-			TODO("Not yet implemented")
+			if (this == matchPoint) {
+				return true
+			}
+			if (this in (backwardSearch.searchingNodes as HashSet<CanReappearCells>)) {
+				matchPoint = this
+				return true
+			}
+			return false
 		}
+
 	}
 
 	private val forwardSearch = ForwardSearch()
@@ -326,6 +357,8 @@ class SolutionFinder(
 			TODO("Not yet implemented")
 		}
 	}
+
+	private var matchPoint: CanReappearCells? = null
 
 	private val backwardSearch = BackwardSearch()
 
