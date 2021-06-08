@@ -36,12 +36,28 @@ class AiWnd(roomNo: Int) : View("AI自动求解 - 第 $roomNo 关") {
 
 	override fun onDock() {
 		super.onDock()
-		val searchResult = SolutionFinder(
-			board.scene.width, board.scene.height,
-			board.cells, board.manLocation
-		).search()
-		println(searchResult)
-		println(searchResult.count())
+		j.label3.text = "正在求解……"
+		runAsync {
+			SolutionFinder(
+				board.scene.width, board.scene.height,
+				board.cells, board.manLocation
+			).search(
+				{ level, nodeCount ->
+					runLater {
+						j.label1.text = "正向搜索 - 深度：$level 节点数：$nodeCount"
+					}
+				},
+				{ level, nodeCount ->
+					runLater {
+						j.label2.text = "反向搜索 - 深度：$level 节点数：$nodeCount"
+					}
+				}
+			)
+		} ui { searchResult ->
+			println(searchResult)
+			println(searchResult.count())
+			j.label3.text = "求解完成！最佳解法需${searchResult.count()}步。"
+		}
 	}
 
 	fun testIt() {

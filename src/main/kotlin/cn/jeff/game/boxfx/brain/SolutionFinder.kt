@@ -299,7 +299,20 @@ class SolutionFinder(
 
 	private var matchPoint: EvcNode? = null
 
-	fun search() = runBlocking {
+	fun search(
+		reportForwardSearch: (level: Int, nodeCount: Int) -> Unit,
+		reportBackwardSearch: (level: Int, nodeCount: Int) -> Unit,
+	) = runBlocking {
+		val oldForwardOnNewLevel = forwardSearch.onNewLevel
+		forwardSearch.onNewLevel = { level, nodeCount ->
+			reportForwardSearch(level, nodeCount)
+			oldForwardOnNewLevel(level, nodeCount)
+		}
+		val oldBackwardOnNewLevel = backwardSearch.onNewLevel
+		backwardSearch.onNewLevel = { level, nodeCount ->
+			reportBackwardSearch(level, nodeCount)
+			oldBackwardOnNewLevel(level, nodeCount)
+		}
 		val forwardSearchResult = async {
 			forwardSearch.search(
 				RootNode(startingCells)
