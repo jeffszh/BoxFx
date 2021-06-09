@@ -4,6 +4,7 @@ import cn.jeff.game.boxfx.brain.SolutionFinder
 import javafx.beans.property.ListProperty
 import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.property.SimpleListProperty
+import javafx.concurrent.Task
 import javafx.fxml.FXMLLoader
 import javafx.scene.layout.BorderPane
 import tornadofx.*
@@ -16,6 +17,7 @@ class AiWnd(private val roomNo: Int) : View("AI自动求解 - 第 $roomNo 关") 
 	private val aiResult: ListProperty<SolutionFinder.EvcLink> = SimpleListProperty()
 	private val aiSuccess = aiResult.isNotNull
 	private val demoStep = SimpleIntegerProperty(0)
+	private var aiTask: Task<*>? = null
 
 	init {
 		primaryStage.isResizable = true
@@ -45,18 +47,24 @@ class AiWnd(private val roomNo: Int) : View("AI自动求解 - 第 $roomNo 关") 
 				)
 			)
 		)
+		j.btnAutoDemo.disableProperty().bind(demoDisabled)
 		j.stepLabel.textProperty().bind(demoStep.stringBinding {
 			"第${it}步"
 		})
 	}
 
 	fun abort() {
+		aiTask?.cancel()
+	}
+
+	override fun onUndock() {
+		abort()
 	}
 
 	override fun onDock() {
 		super.onDock()
 		j.label3.text = "正在求解……"
-		runAsync {
+		aiTask = runAsync {
 			SolutionFinder(
 				board.scene.width, board.scene.height,
 				board.cells, board.manLocation
@@ -78,6 +86,7 @@ class AiWnd(private val roomNo: Int) : View("AI自动求解 - 第 $roomNo 关") 
 			j.label3.text = "求解完成！最佳解法需${searchResult.count()}步。"
 			aiResult.value = searchResult.observable()
 			demoStep.value = 0
+			j.btnAutoDemo.requestFocus()
 		}
 	}
 
@@ -95,6 +104,13 @@ class AiWnd(private val roomNo: Int) : View("AI自动求解 - 第 $roomNo 关") 
 		}
 		board.moveOrPush(push.direction.dx, push.direction.dy)
 		demoStep.value++
+	}
+
+	fun autoDemo() {
+		demoReset()
+		while (!j.btnNext.isDisabled) {
+			demoNext()
+		}
 	}
 
 	fun testIt() {

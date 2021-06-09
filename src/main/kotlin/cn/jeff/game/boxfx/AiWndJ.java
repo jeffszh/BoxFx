@@ -9,6 +9,7 @@ public class AiWndJ {
 	public Label label1;
 	public Label label2;
 	public Label label3;
+	public Button btnAutoDemo;
 	public Button btnReset;
 	public Button btnNext;
 	public Label stepLabel;
@@ -27,6 +28,10 @@ public class AiWndJ {
 
 	public void demoNext() {
 		k.demoNext();
+	}
+
+	public void autoDemo() {
+		k.autoDemo();
 	}
 
 }

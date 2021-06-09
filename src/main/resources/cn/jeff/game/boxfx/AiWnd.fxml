@@ -10,6 +10,7 @@
 			fx:controller="cn.jeff.game.boxfx.AiWndJ">
 	<bottom>
 		<HBox alignment="CENTER" spacing="10.0" BorderPane.alignment="CENTER">
+			<Button fx:id="btnAutoDemo" mnemonicParsing="false" onAction="#autoDemo" text="自动演示"/>
 			<Button fx:id="btnReset" mnemonicParsing="false" onAction="#demoReset" text="從頭開始"/>
 			<Button fx:id="btnNext" defaultButton="true" mnemonicParsing="false"
 					onAction="#demoNext" text="下一步"/>
