@@ -11,6 +11,7 @@ import javafx.beans.property.SimpleLongProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.fxml.FXMLLoader
 import javafx.scene.layout.BorderPane
+import javafx.stage.Screen
 import tornadofx.*
 
 class MainWnd : View("推箱子智能版") {
@@ -152,7 +153,10 @@ class MainWnd : View("推箱子智能版") {
 	fun autoResolve() {
 		val aiWnd = AiWnd(currentRoomNo.value).openWindow()!!
 		currentStage?.let {
-			aiWnd.x = it.x + it.width
+			val wndRight = it.x + it.width
+			if (wndRight < Screen.getPrimary().bounds.width) {
+				aiWnd.x = wndRight
+			}
 		}
 	}
 
