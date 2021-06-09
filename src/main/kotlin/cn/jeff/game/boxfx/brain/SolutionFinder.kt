@@ -151,12 +151,7 @@ class SolutionFinder(
 				reappearCells().toPackedString() ==
 				other.reappearCells().toPackedString()
 
-		private var cacheCells: EvalCells? = null
-
-		open fun reappearCells(): EvalCells =
-			cacheCells ?: internalReappearCells().also { cacheCells = it }
-
-		private fun internalReappearCells(): EvalCells {
+		open fun reappearCells(): EvalCells {
 			val fromLinkList = mutableListOf<EvcLink>()
 			var n1 = this
 			while (n1.fromNode != null) {
