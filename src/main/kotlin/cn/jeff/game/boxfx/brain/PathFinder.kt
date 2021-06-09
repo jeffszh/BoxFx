@@ -83,8 +83,8 @@ class PathFinder(
 			}
 
 		override fun LocationNode.checkDone(): Boolean {
-			if (this == matchPoint) {
-				return true
+			if (matchPoint != null) {
+				return this == matchPoint
 			}
 			if (backwardSearch.searchingNodes.contains(this)) {
 				matchPoint = this
@@ -118,8 +118,8 @@ class PathFinder(
 			}
 
 		override fun LocationNode.checkDone(): Boolean {
-			if (this == matchPoint) {
-				return true
+			if (matchPoint != null) {
+				return this == matchPoint
 			}
 			if (forwardSearch.searchingNodes.contains(this)) {
 				matchPoint = this
