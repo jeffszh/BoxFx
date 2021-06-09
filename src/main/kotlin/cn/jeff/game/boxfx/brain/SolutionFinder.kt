@@ -203,9 +203,23 @@ class SolutionFinder(
 			}
 		}
 
+		/**
+		 * 原先的代码（已注释掉）有bug，如果[matchPoint]已经非空（另一个方向的搜索找到），
+		 * 但跟本节点不相同，那么，在第二个if里面可能又会找到另一个[matchPoint]，
+		 * 于是，正反两条路径就错开了，得不出正确的结果。
+		 * 修正：当[matchPoint]已经存在，不再进行第二个判断。
+		 */
 		override fun EvcNode.checkDone(): Boolean {
-			if (this == matchPoint) {
-				return true
+//			if (this == matchPoint) {
+//				return true
+//			}
+//			if (this in backwardSearch.searchingNodes) {
+//				matchPoint = this
+//				return true
+//			}
+//			return false
+			if (matchPoint != null) {
+				return this == matchPoint
 			}
 			if (this in backwardSearch.searchingNodes) {
 				matchPoint = this
@@ -273,6 +287,10 @@ class SolutionFinder(
 		override fun EvcNode.checkDone(): Boolean {
 			if (this == matchPoint) {
 				return true
+			}
+			// 若matchPoint已经存在，不要进行后续判断。
+			if (matchPoint != null) {
+				return false
 			}
 			if (this in forwardSearch.searchingNodes) {
 				matchPoint = this

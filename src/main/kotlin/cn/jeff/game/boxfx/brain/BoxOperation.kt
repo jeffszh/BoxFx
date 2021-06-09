@@ -47,4 +47,8 @@ abstract class BoxOperation(
 			return Push(pushManLocation, pushDirection)
 		}
 	}
+
+	override fun toString(): String =
+		"${javaClass.simpleName}{man=$manLocation, dir=$direction}"
+
 }
