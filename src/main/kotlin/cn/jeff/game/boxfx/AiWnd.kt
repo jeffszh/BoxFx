@@ -1,6 +1,8 @@
 package cn.jeff.game.boxfx
 
 import cn.jeff.game.boxfx.brain.SolutionFinder
+import cn.jeff.game.boxfx.data.RoomRecord
+import cn.jeff.game.boxfx.data.gameRecord
 import javafx.beans.property.ListProperty
 import javafx.beans.property.SimpleIntegerProperty
 import javafx.beans.property.SimpleListProperty
@@ -8,6 +10,7 @@ import javafx.concurrent.Task
 import javafx.fxml.FXMLLoader
 import javafx.scene.layout.BorderPane
 import tornadofx.*
+import java.util.*
 
 class AiWnd(private val roomNo: Int) : View("AI自动求解 - 第 $roomNo 关") {
 
@@ -63,6 +66,7 @@ class AiWnd(private val roomNo: Int) : View("AI自动求解 - 第 $roomNo 关") 
 
 	override fun onDock() {
 		super.onDock()
+		val t1 = Date().time
 		j.label3.text = "正在求解……"
 		aiTask = runAsync {
 			SolutionFinder(
@@ -83,10 +87,19 @@ class AiWnd(private val roomNo: Int) : View("AI自动求解 - 第 $roomNo 关") 
 		} ui { searchResult ->
 			println(searchResult)
 			println(searchResult.count())
-			j.label3.text = "求解完成！最佳解法需${searchResult.count()}步。"
+			val t2 = Date().time
+			val timeElapsed = t2 - t1
+			j.label3.text = "求解完成！最佳解法${searchResult.count()}步，耗时${timeElapsed}毫秒。"
 			aiResult.value = searchResult.observable()
 			demoStep.value = 0
 			j.btnAutoDemo.requestFocus()
+			val roomRecord = gameRecord.roomRecords[roomNo] ?: RoomRecord()
+			roomRecord.apply {
+				stepCountByAi = searchResult.count()
+				aiSpendsTime = timeElapsed
+			}
+			gameRecord.roomRecords[roomNo] = roomRecord
+			gameRecord.save()
 		}
 	}
 

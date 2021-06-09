@@ -6,21 +6,22 @@ import java.io.FileWriter
 import java.util.*
 
 data class GameRecord(
-		var lastPlayedRoom: Int? = null,
-		var roomRecords: SortedMap<Int, RoomRecord> = sortedMapOf()
+	var lastPlayedRoom: Int? = null,
+	var roomRecords: SortedMap<Int, RoomRecord> = sortedMapOf()
 ) {
 	fun save() = saveGameRecord(this)
 }
 
 data class RoomRecord(
-		var bestStepCount: Int? = null,
-		var stepCountByAi: Int? = null
+	var bestStepCount: Int? = null,
+	var stepCountByAi: Int? = null,
+	var aiSpendsTime: Long? = null,
 )
 
 private const val RECORD_FILE = "GameRecord.json"
 private val gson = GsonBuilder()
-		.setPrettyPrinting()
-		.create()
+	.setPrettyPrinting()
+	.create()
 
 val gameRecord = loadGameRecord().apply { save() }
 

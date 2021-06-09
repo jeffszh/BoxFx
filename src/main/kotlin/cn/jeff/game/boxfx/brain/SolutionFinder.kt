@@ -210,6 +210,7 @@ class SolutionFinder(
 		 * 修正：当[matchPoint]已经存在，不再进行第二个判断。
 		 */
 		override fun EvcNode.checkDone(): Boolean {
+			// 以下是有bug的代码
 //			if (this == matchPoint) {
 //				return true
 //			}
@@ -218,6 +219,7 @@ class SolutionFinder(
 //				return true
 //			}
 //			return false
+			// 以下是修正后的代码
 			if (matchPoint != null) {
 				return this == matchPoint
 			}

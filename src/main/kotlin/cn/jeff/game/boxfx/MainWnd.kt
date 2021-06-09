@@ -7,6 +7,7 @@ import cn.jeff.game.boxfx.event.TimerEvent
 import cn.jeff.utils.Toast
 import cn.jeff.utils.inputNumber
 import javafx.beans.property.SimpleIntegerProperty
+import javafx.beans.property.SimpleLongProperty
 import javafx.beans.property.SimpleStringProperty
 import javafx.fxml.FXMLLoader
 import javafx.scene.layout.BorderPane
@@ -20,6 +21,7 @@ class MainWnd : View("推箱子智能版") {
 	private val currentRoomNo = SimpleIntegerProperty(0)
 	private val bestStepCount = SimpleStringProperty()
 	private val bestStepByAI = SimpleStringProperty()
+	private val aiSpendsTime = SimpleLongProperty()
 
 	init {
 		primaryStage.isResizable = true
@@ -62,12 +64,16 @@ class MainWnd : View("推箱子智能版") {
 			?.bestStepCount?.toString()
 		bestStepByAI.value = gameRecord.roomRecords[currentRoomNo.value]
 			?.stepCountByAi?.toString()
+		aiSpendsTime.value = gameRecord.roomRecords[currentRoomNo.value]
+			?.aiSpendsTime ?: 0
 		bindStatusLabel()
 	}
 
 	private fun bindStatusLabel() {
 		val stepCount = board.stepCount
-		val binding = stringBinding(currentRoomNo, stepCount, bestStepCount, bestStepByAI) {
+		val binding = stringBinding(
+			currentRoomNo, stepCount, bestStepCount, bestStepByAI, aiSpendsTime
+		) {
 			"第${currentRoomNo.value}关  当前步数：${stepCount.value} ${
 				bestStepCount.value?.let {
 					"以往最佳步数：$it"
@@ -75,6 +81,10 @@ class MainWnd : View("推箱子智能版") {
 			} ${
 				bestStepByAI.value?.let {
 					"AI最佳步数：$it"
+				} ?: ""
+			} ${
+				aiSpendsTime.value?.let {
+					if (it == 0.toLong()) "" else "AI用时：${it}毫秒"
 				} ?: ""
 			}"
 		}
