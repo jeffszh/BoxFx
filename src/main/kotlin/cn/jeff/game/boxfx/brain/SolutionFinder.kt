@@ -233,22 +233,19 @@ class SolutionFinder(
 		init {
 			name = "推 --- "
 			onNewLevel = { level, nodeCount ->
-//				if (nodeCount >
-//					backwardSearch.searchingNodes.count() +
-//					backwardSearch.searchedNodes.count()
-//				) {
-//					println("$name 暂停搜索第 $level 层。")
-//					yield()
-//				}
-				if (level > 3) {
-					println("$name 暂停搜索第 $level 层。")
-					yield()
+				if (level > 0) {
+					forwardCost = nodeCount / level
+					if (forwardCost > backwardCost) {
+						println("$name 暂停搜索第 $level 层。")
+						yield()
+					}
 				}
 			}
 		}
 	}
 
 	private val forwardSearch = ForwardSearch()
+	private var forwardCost = 0
 
 	/**
 	 * # 根节点
@@ -308,22 +305,19 @@ class SolutionFinder(
 		init {
 			name = "拉 --- "
 			onNewLevel = { level, nodeCount ->
-//				if (nodeCount >
-//					forwardSearch.searchingNodes.count() +
-//					forwardSearch.searchedNodes.count()
-//				) {
-//					println("$name 暂停搜索第 $level 层。")
-//					yield()
-//				}
-				if (forwardSearch.searchedNodes.count() < 5000) {
-					println("$name 暂停搜索第 $level 层。")
-					yield()
+				if (level > 0) {
+					backwardCost = nodeCount / level
+					if (backwardCost > forwardCost) {
+						println("$name 暂停搜索第 $level 层。")
+						yield()
+					}
 				}
 			}
 		}
 	}
 
 	private val backwardSearch = BackwardSearch()
+	private var backwardCost = 0
 
 	private var matchPoint: EvcNode? = null
 
