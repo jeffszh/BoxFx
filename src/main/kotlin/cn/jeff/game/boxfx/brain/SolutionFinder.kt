@@ -233,10 +233,14 @@ class SolutionFinder(
 		init {
 			name = "推 --- "
 			onNewLevel = { level, nodeCount ->
-				if (nodeCount >
-					backwardSearch.searchingNodes.count() +
-					backwardSearch.searchedNodes.count()
-				) {
+//				if (nodeCount >
+//					backwardSearch.searchingNodes.count() +
+//					backwardSearch.searchedNodes.count()
+//				) {
+//					println("$name 暂停搜索第 $level 层。")
+//					yield()
+//				}
+				if (level > 3) {
 					println("$name 暂停搜索第 $level 层。")
 					yield()
 				}
@@ -304,10 +308,14 @@ class SolutionFinder(
 		init {
 			name = "拉 --- "
 			onNewLevel = { level, nodeCount ->
-				if (nodeCount >
-					forwardSearch.searchingNodes.count() +
-					forwardSearch.searchedNodes.count()
-				) {
+//				if (nodeCount >
+//					forwardSearch.searchingNodes.count() +
+//					forwardSearch.searchedNodes.count()
+//				) {
+//					println("$name 暂停搜索第 $level 层。")
+//					yield()
+//				}
+				if (forwardSearch.searchedNodes.count() < 5000) {
 					println("$name 暂停搜索第 $level 层。")
 					yield()
 				}
