@@ -177,6 +177,9 @@ class SolutionFinder(
 	private inner class ForwardSearch : BreathFirstSearch<EvcNode, EvcLink>() {
 		override fun EvcNode.generateNext(): List<EvcNode> {
 			val evc = reappearCells()
+			if (isDead(evc, fromLink)) {
+				return emptyList()
+			}
 			// 找所有箱子
 			val boxLocationList = evc.forAllCells { location, evc1 ->
 				if (evc1[location].isBox()) {
@@ -200,6 +203,57 @@ class SolutionFinder(
 			// 根据推列表生成下级节点
 			return pushList.map { push ->
 				EvcNode(distance + 1, EvcLink(push), this)
+			}
+		}
+
+		private fun isDead(evc: EvalCells, fromLink: EvcLink?): Boolean {
+			if (fromLink == null) {
+				return false
+			}
+			val push = fromLink.pushOrPull as BoxOperation.Push
+			val center = push.manLocation + push.direction + push.direction
+			return EightTrigrams.checkEitherOr(center, push.direction) {
+				// 判斷推入墻角的情況
+				heaven { location ->
+					center !in destLocations && evc[location] == Cell.WALL
+				}
+				water { location ->
+					evc[location] == Cell.WALL
+				}
+			} || EightTrigrams.checkEitherOr(center, push.direction) {
+				// 判斷聚四的情況
+				var hasUnresolvedBox = false
+				heaven { location ->
+					if (center !in destLocations) hasUnresolvedBox = true
+					when (evc[location]) {
+						Cell.BOX -> {
+							if (location !in destLocations) hasUnresolvedBox = true
+							true
+						}
+						Cell.WALL -> true
+						else -> false
+					}
+				}
+				wind { location ->
+					when (evc[location]) {
+						Cell.BOX -> {
+							if (location !in destLocations) hasUnresolvedBox = true
+							true
+						}
+						Cell.WALL -> true
+						else -> false
+					}
+				}
+				water { location ->
+					when (evc[location]) {
+						Cell.BOX -> {
+							if (location !in destLocations) hasUnresolvedBox = true
+							true
+						}
+						Cell.WALL -> true
+						else -> false
+					} && hasUnresolvedBox
+				}
 			}
 		}
 
