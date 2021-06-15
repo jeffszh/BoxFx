@@ -18,6 +18,7 @@ class SolutionFinder(
 	private val startingCells: EvalCells = EvalCells(width, height, cells)
 	private val endingCells: Set<EvalCells>
 	private val destLocations: Set<LocationXY> = startingCells.collectDestSet()
+	private val deadArea: Set<LocationXY>
 
 	init {
 		startingCells.normalize()
@@ -66,6 +67,103 @@ class SolutionFinder(
 			}
 		}
 		endingCells = candidateEndingCells.toSet()
+
+		// 找所有死角
+		val deadCorners = startingCells.forAllCells { location, evc ->
+			if (location in destLocations || evc[location] in setOf(Cell.WALL, Cell.OUTSIDE)) {
+				null
+			} else {
+				location
+			}
+		}.filterNotNull().filter { location ->
+			Direction.values().any { dir ->
+				EightTrigrams.check(location, dir) {
+					heaven {
+						startingCells[it] == Cell.WALL
+					}
+					water {
+						startingCells[it] == Cell.WALL
+					}
+				}
+			}
+		}
+
+		// 找所有死边
+		// 先横向找
+		val horizontalDeadBorders = (0 until height).flatMap { y ->
+			val deadCornersInLine = deadCorners.filter { it.y == y }.sortedBy { it.x }
+			if (deadCornersInLine.count() >= 2) {
+				(0 until deadCornersInLine.count() - 1).flatMap { i ->
+					val p1 = deadCornersInLine[i]
+					val p2 = deadCornersInLine[i + 1]
+					val straightInSight = (p1.x..p2.x).all { x ->
+						LocationXY(x, y) !in destLocations &&
+								startingCells[LocationXY(x, y)] != Cell.WALL
+					}
+					val upSideWallAllWall = (p1.x..p2.x).all { x ->
+						startingCells[LocationXY(x, y - 1)] == Cell.WALL
+					}
+					val downSideWallAllWall = (p1.x..p2.x).all { x ->
+						startingCells[LocationXY(x, y + 1)] == Cell.WALL
+					}
+					if (straightInSight && (upSideWallAllWall || downSideWallAllWall)) {
+						(p1.x..p2.x).map { x ->
+							LocationXY(x, y)
+						}
+					} else {
+						emptyList()
+					}
+				}
+			} else {
+				emptyList()
+			}
+		}
+		// 再纵向找
+		val verticalDeadBorders = (0 until width).flatMap { x ->
+			val deadCornersInColumn = deadCorners.filter { it.x == x }.sortedBy { it.y }
+			if (deadCornersInColumn.count() >= 2) {
+				(0 until deadCornersInColumn.count() - 1).flatMap { i ->
+					val p1 = deadCornersInColumn[i]
+					val p2 = deadCornersInColumn[i + 1]
+					val straightInSight = (p1.y..p2.y).all { y ->
+						LocationXY(x, y) !in destLocations &&
+								startingCells[LocationXY(x, y)] != Cell.WALL
+					}
+					val leftSideAllWall = (p1.y..p2.y).all { y ->
+						startingCells[LocationXY(x - 1, y)] == Cell.WALL
+					}
+					val rightSideAllWall = (p1.y..p2.y).all { y ->
+						startingCells[LocationXY(x + 1, y)] == Cell.WALL
+					}
+					if (straightInSight && (leftSideAllWall || rightSideAllWall)) {
+						(p1.y..p2.y).map { y ->
+							LocationXY(x, y)
+						}
+					} else {
+						emptyList()
+					}
+				}
+			} else {
+				emptyList()
+			}
+		}
+
+		deadArea = (deadCorners + horizontalDeadBorders + verticalDeadBorders).toSet()
+
+		for (y in 0 until height) {
+			for (x in 0 until width) {
+				val loc = LocationXY(x, y)
+				print(
+					if (loc in deadArea) {
+						"X"
+					} else {
+						"-+ .#@^"[startingCells[loc].ordinal]
+					}
+				)
+			}
+			println()
+		}
+		println("死点数量：${deadArea.count()}")
 	}
 
 	companion object {
@@ -192,7 +290,8 @@ class SolutionFinder(
 			val pushList = boxLocationList.flatMap { boxLocation ->
 				Direction.values().mapNotNull { direction ->
 					if (evc[boxLocation - direction] == Cell.MAN &&
-						evc[boxLocation + direction].isPassable()
+						evc[boxLocation + direction].isPassable() &&
+						boxLocation + direction !in deadArea
 					) {
 						BoxOperation.Push(boxLocation - direction, direction)
 					} else {
@@ -212,7 +311,7 @@ class SolutionFinder(
 			}
 			val push = fromLink.pushOrPull as BoxOperation.Push
 			val center = push.manLocation + push.direction + push.direction
-			return EightTrigrams.checkEitherOr(center, push.direction) {
+			return /*EightTrigrams.checkEitherOr(center, push.direction) {
 				// 判斷推入墻角的情況
 				heaven { location ->
 					center !in destLocations && evc[location] == Cell.WALL
@@ -220,7 +319,7 @@ class SolutionFinder(
 				water { location ->
 					evc[location] == Cell.WALL
 				}
-			} || EightTrigrams.checkEitherOr(center, push.direction) {
+			} || */EightTrigrams.checkEitherOr(center, push.direction) {
 				// 判斷聚四的情況
 				var hasUnresolvedBox = false
 				heaven { location ->
@@ -255,6 +354,7 @@ class SolutionFinder(
 					} && hasUnresolvedBox
 				}
 			}
+			// TODO: 判断折四的情况
 		}
 
 		/**
