@@ -57,7 +57,7 @@ class AiWnd(private val roomNo: Int) : View("AI自动求解 - 第 $roomNo 关") 
 	}
 
 	fun abort() {
-		aiTask?.cancel()
+		aiTask?.cancel(true)
 	}
 
 	override fun onUndock() {

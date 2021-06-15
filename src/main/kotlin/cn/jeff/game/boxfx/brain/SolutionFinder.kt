@@ -274,6 +274,9 @@ class SolutionFinder(
 
 	private inner class ForwardSearch : BreathFirstSearch<EvcNode, EvcLink>() {
 		override fun EvcNode.generateNext(): List<EvcNode> {
+			if (Thread.currentThread().isInterrupted){
+				return emptyList()
+			}
 			val evc = reappearCells()
 			if (isDead(evc, fromLink)) {
 				return emptyList()
@@ -414,6 +417,9 @@ class SolutionFinder(
 
 	private inner class BackwardSearch : BreathFirstSearch<EvcNode, EvcLink>() {
 		override fun EvcNode.generateNext(): List<EvcNode> {
+			if (Thread.currentThread().isInterrupted){
+				return emptyList()
+			}
 			val evc = reappearCells()
 			// 找所有箱子
 			val boxLocationList = evc.forAllCells { location, evc1 ->
