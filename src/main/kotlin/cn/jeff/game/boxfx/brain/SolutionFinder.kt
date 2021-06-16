@@ -274,7 +274,7 @@ class SolutionFinder(
 
 	private inner class ForwardSearch : BreathFirstSearch<EvcNode, EvcLink>() {
 		override fun EvcNode.generateNext(): List<EvcNode> {
-			if (Thread.currentThread().isInterrupted){
+			if (Thread.currentThread().isInterrupted) {
 				return emptyList()
 			}
 			val evc = reappearCells()
@@ -356,8 +356,31 @@ class SolutionFinder(
 						else -> false
 					} && hasUnresolvedBox
 				}
+			} || EightTrigrams.checkEitherOr(center, push.direction) {
+				// 判断折四之一：横竖横
+				heaven { location ->
+					(center !in destLocations || location !in destLocations) &&
+							evc[location] == Cell.BOX
+				}
+				swamp { location ->
+					evc[location] == Cell.WALL
+				}
+				water { location ->
+					evc[location] == Cell.WALL
+				}
+			} || EightTrigrams.checkEitherOr(center, push.direction) {
+				// 判断折四之二：竖横竖
+				water { location ->
+					(center !in destLocations || location !in destLocations) &&
+							evc[location] == Cell.BOX
+				}
+				heaven { location ->
+					evc[location] == Cell.WALL
+				}
+				mountain { location ->
+					evc[location] == Cell.WALL
+				}
 			}
-			// TODO: 判断折四的情况
 		}
 
 		/**
@@ -417,7 +440,7 @@ class SolutionFinder(
 
 	private inner class BackwardSearch : BreathFirstSearch<EvcNode, EvcLink>() {
 		override fun EvcNode.generateNext(): List<EvcNode> {
-			if (Thread.currentThread().isInterrupted){
+			if (Thread.currentThread().isInterrupted) {
 				return emptyList()
 			}
 			val evc = reappearCells()

@@ -56,3 +56,4 @@ gradle-app.setting
 # gradle/wrapper/gradle-wrapper.properties
 
 /GameRecord.json
+/extra_rooms.txt
