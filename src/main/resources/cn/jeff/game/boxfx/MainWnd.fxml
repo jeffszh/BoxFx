@@ -25,6 +25,8 @@
 					<Tooltip text="下一关"/>
 				</tooltip>
 			</Button>
+			<Button fx:id="btnRegret" focusTraversable="false" mnemonicParsing="false"
+					onAction="#regret" text="悔一步"/>
 			<Button focusTraversable="false" mnemonicParsing="false" onAction="#playAgain"
 					text="重玩本关"/>
 			<Button focusTraversable="false" mnemonicParsing="false" onAction="#autoResolve"

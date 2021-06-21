@@ -90,6 +90,7 @@ class MainWnd : View("推箱子智能版") {
 			}"
 		}
 		j.statusLabel.bind(binding)
+		j.btnRegret.disableProperty().bind(stepCount.isEqualTo(0))
 	}
 
 	fun prevRoom() {
@@ -142,6 +143,10 @@ class MainWnd : View("推箱子智能版") {
 		} else {
 			Toast("后面没有了。").show()
 		}
+	}
+
+	fun regret() {
+		board.regret()
 	}
 
 	fun playAgain() {

@@ -92,15 +92,11 @@ class Board : View() {
 	private val width get() = scene.width
 	private val height get() = scene.height
 	private val pushHistory = mutableListOf<BoxOperation.Push>().observable()
-	val stepCount = SimpleIntegerProperty(0)
+	val stepCount = integerBinding(pushHistory) { count() }
 	private var isSuccess = false
 	var isInAiWnd = false
 	val isBusyProperty = SimpleBooleanProperty(false)
 	private var isBusy by isBusyProperty
-
-	init {
-		stepCount.bind(integerBinding(pushHistory) { count() })
-	}
 
 	private fun internalSetScene(scene: Scene) {
 		root.clear()
@@ -239,6 +235,24 @@ class Board : View() {
 				}
 			}
 		}
+	}
+
+	fun regret() {
+		cells[manLocation] = (cells[manLocation] - Cell.MAN)!!
+		val lastPush = pushHistory.removeLast()
+		val location0 = lastPush.manLocation
+		val location1 = location0 + lastPush.direction
+		val location2 = location1 + lastPush.direction
+		val cell0 = cells[location0]
+		val cell1 = cells[location1]
+		val cell2 = cells[location2]
+		val newCell0 = cell0 + Cell.MAN
+		val newCell1 = cell1 + Cell.BOX
+		val newCell2 = cell2 - Cell.BOX
+		cells[location2] = newCell2!!
+		cells[location1] = newCell1!!
+		cells[location0] = newCell0!!
+		manLocation = location0
 	}
 
 	/**

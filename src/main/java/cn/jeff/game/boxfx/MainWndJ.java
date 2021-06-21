@@ -1,11 +1,13 @@
 package cn.jeff.game.boxfx;
 
+import javafx.scene.control.Button;
 import javafx.scene.control.Label;
 
 public class MainWndJ {
 
 	public MainWnd k;
 	public Label statusLabel;
+	public Button btnRegret;
 
 	public void prevRoom() {
 		k.prevRoom();
@@ -25,6 +27,10 @@ public class MainWndJ {
 
 	public void autoResolve() {
 		k.autoResolve();
+	}
+
+	public void regret() {
+		k.regret();
 	}
 
 }
