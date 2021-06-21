@@ -1,5 +1,7 @@
 package cn.jeff.game.boxfx
 
+import cn.jeff.game.boxfx.brain.BoxOperation
+import cn.jeff.game.boxfx.brain.Direction
 import cn.jeff.game.boxfx.brain.PathFinder
 import cn.jeff.game.boxfx.event.RoomSuccessEvent
 import cn.jeff.utils.ArrayXY
@@ -84,16 +86,21 @@ class Board : View() {
 		set(value) {
 			field = value
 			internalSetScene(value)
-			stepCount.value = 0
+			pushHistory.clear()
 			isSuccess = false
 		}
 	private val width get() = scene.width
 	private val height get() = scene.height
+	private val pushHistory = mutableListOf<BoxOperation.Push>().observable()
 	val stepCount = SimpleIntegerProperty(0)
 	private var isSuccess = false
 	var isInAiWnd = false
 	val isBusyProperty = SimpleBooleanProperty(false)
 	private var isBusy by isBusyProperty
+
+	init {
+		stepCount.bind(integerBinding(pushHistory) { count() })
+	}
 
 	private fun internalSetScene(scene: Scene) {
 		root.clear()
@@ -215,11 +222,19 @@ class Board : View() {
 				val newCell1 = (cell1 - cell1 ?: Cell.OUTSIDE) + cell0
 				val newCell0 = cell0 - cell0
 				if (newCell0 != null && newCell1 != null && newCell2 != null) {
+					pushHistory.add(
+						BoxOperation.Push(
+							manLocation,
+							Direction.values().find {
+								it.dx == deltaX && it.dy == deltaY
+							}!!
+						)
+					)
 					cells[location0] = newCell0
 					cells[location1] = newCell1
 					cells[location2] = newCell2
 					manLocation = manLocation.delta(deltaX, deltaY)
-					stepCount.value++
+					// stepCount.value++
 					checkSuccess()
 				}
 			}

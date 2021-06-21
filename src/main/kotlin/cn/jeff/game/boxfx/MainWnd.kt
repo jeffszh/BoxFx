@@ -161,9 +161,9 @@ class MainWnd : View("推箱子智能版") {
 	}
 
 	private fun onRoomSuccess(stepCount: Int) {
-		bestStepCount.value = stepCount.toString()
 		val roomRecord = gameRecord.roomRecords[currentRoomNo.value] ?: RoomRecord()
 		if (roomRecord.bestStepCount ?: Int.MAX_VALUE > stepCount) {
+			bestStepCount.value = stepCount.toString()
 			roomRecord.bestStepCount = stepCount
 			gameRecord.roomRecords[currentRoomNo.value] = roomRecord
 			gameRecord.save()
